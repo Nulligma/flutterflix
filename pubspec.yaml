@@ -28,6 +28,8 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.0
+  video_player: ^1.0.1
+  chewie: ^0.12.0
 
 dev_dependencies:
   flutter_test:
@@ -45,7 +47,16 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
+  assets:
+    - assets/images/
+    - assets/images/atla_episodes/
+    - assets/images/blackMirror_episodes/
+    - assets/images/breakingBad_episodes/
+    - assets/images/cobraKai_episodes/
+    - assets/images/queen_episodes/
+    - assets/images/tiger_episodes/
+    - assets/images/umbrella_episodes/
+    - assets/images/witcher_episodes/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
