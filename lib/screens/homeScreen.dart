@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutterflix/data/data.dart';
+import 'package:flutterflix/helpers/logicHelpers.dart';
 import 'package:flutterflix/models/contentModel.dart';
 import 'package:flutterflix/widgets/contentGrid.dart';
+import 'package:flutterflix/widgets/notificationBox.dart';
 import 'package:flutterflix/widgets/widgets.dart';
 import 'dart:math';
 
@@ -37,7 +39,14 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Content> modifiedOriginals;
   List<Content> modifiedTrending;
 
+  bool showingNotification;
+
+  OverlayEntry _overlayEntry;
+
+  final double appBarSize = 50.0;
+
   String genre;
+  String searchString;
 
   @override
   void initState() {
@@ -60,6 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
           originals.where((el) => el.category == category).toList();
       modifiedTrending =
           trending.where((el) => el.category == category).toList();
+
       modifiedMyList = myList.where((el) => el.category == category).toList();
     } else {
       modifiedFeatures = feature;
@@ -71,6 +81,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
     randomFeatureIndex = Random().nextInt(modifiedFeatures.length);
     genre = genres[0];
+    searchString = "";
+
+    showingNotification = false;
 
     super.initState();
   }
@@ -79,6 +92,48 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _scrollController.dispose();
     super.dispose();
+  }
+
+  OverlayEntry get _createOverlayEntry {
+    return OverlayEntry(builder: (context) {
+      return Positioned(
+        right: 20.0,
+        top: appBarSize + 10.0,
+        width: NotificationBox.width,
+        child: NotificationBox(
+          notifications: [
+            notification1,
+            notification2,
+            notification3,
+            notification4
+          ],
+        ),
+      );
+    });
+  }
+
+  void showNotification() {
+    if (showingNotification)
+      _overlayEntry.remove();
+    else {
+      _overlayEntry = _createOverlayEntry;
+
+      Overlay.of(context).insert(_overlayEntry);
+    }
+
+    setState(() {
+      showingNotification = !showingNotification;
+    });
+  }
+
+  void removeNotification() {
+    if (!showingNotification) return;
+
+    _overlayEntry.remove();
+
+    setState(() {
+      showingNotification = false;
+    });
   }
 
   void changeGenre(String newGenre) {
@@ -91,6 +146,16 @@ class _HomeScreenState extends State<HomeScreen> {
       modifiedMyList = allContent
           .where((el) =>
               el.category == widget.category && el.genres.contains(genre))
+          .toList();
+    });
+  }
+
+  void onSearch(String newSearchString) {
+    setState(() {
+      searchString = newSearchString;
+
+      modifiedMyList = allContent
+          .where((content) => searchFilter(content, newSearchString))
           .toList();
     });
   }
@@ -153,12 +218,16 @@ class _HomeScreenState extends State<HomeScreen> {
           height: 75.0,
         ),
       ),
-      ContentGrid(contents: modifiedMyList),
+      SliverFillRemaining(
+        child: ContentGrid(
+          contents: modifiedMyList,
+        ),
+      )
     ];
   }
 
   bool get showGrid {
-    if (widget.type == HomeScreenType.mylist)
+    if (widget.type == HomeScreenType.mylist || searchString.isNotEmpty)
       return true;
     else if (widget.type == HomeScreenType.movies ||
         widget.type == HomeScreenType.tvshows) {
@@ -175,19 +244,27 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: PreferredSize(
-          preferredSize: Size(screenSize.width, 50.0),
-          child: CustomAppBar(
-            scrollOffset: _scrollOffset,
-            type: widget.type == HomeScreenType.none
-                ? CustomAppBarType.home
-                : CustomAppBarType.custom_home,
-            category: widget.category,
-            onChange: changeGenre,
-            genre: genre,
+          preferredSize: Size(screenSize.width, appBarSize),
+          child: Listener(
+            onPointerUp: (_) => removeNotification(),
+            child: CustomAppBar(
+              scrollOffset: _scrollOffset,
+              appBarType: widget.type == HomeScreenType.none
+                  ? CustomAppBarType.home
+                  : CustomAppBarType.custom_home,
+              category: widget.category,
+              onGenreChange: changeGenre,
+              onSearchChange: onSearch,
+              showNotification: showNotification,
+              genre: genre,
+            ),
           )),
-      body: CustomScrollView(
-          controller: _scrollController,
-          slivers: showGrid ? singleGrid : multiList),
+      body: Listener(
+        onPointerUp: (_) => removeNotification(),
+        child: CustomScrollView(
+            controller: _scrollController,
+            slivers: showGrid ? singleGrid : multiList),
+      ),
     );
   }
 }

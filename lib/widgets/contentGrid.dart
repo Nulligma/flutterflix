@@ -1,60 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:flutterflix/models/contentModel.dart';
 import 'package:flutterflix/screens/contentDetailScreen.dart';
+import 'package:flutterflix/helpers/uiHelpers.dart';
+import 'package:flutterflix/widgets/responsive.dart';
 
 class ContentGrid extends StatelessWidget {
   final List<Content> contents;
+  final bool scrollLock;
 
-  const ContentGrid({Key key, @required this.contents}) : super(key: key);
+  const ContentGrid({Key key, @required this.contents, this.scrollLock = false})
+      : super(key: key);
 
-  Route _createRoute(Widget newPage) {
-    return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => newPage,
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        var begin = Offset(0.0, 1.0);
-        var end = Offset.zero;
-        var curve = Curves.ease;
-
-        var tween = Tween(begin: begin, end: end);
-        var curvedAnimation = CurvedAnimation(
-          parent: animation,
-          curve: curve,
-        );
-
-        return SlideTransition(
-          position: tween.animate(curvedAnimation),
-          child: child,
-        );
-      },
-    );
+  int gridCrossAxisCount(BuildContext context) {
+    if (Responsive.isMobile(context)) return 3;
+    if (Responsive.isTablet(context)) return 6;
+    if (Responsive.isDesktop(context))
+      return 9;
+    else
+      return 3;
   }
 
   @override
   Widget build(BuildContext context) {
-    return SliverGrid(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 8.0,
-        mainAxisSpacing: 10.0,
-        childAspectRatio: 0.65,
-      ),
-      delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
-        Content content = contents[index];
-        return GestureDetector(
-          onTap: () {
-            Navigator.push(
-                context, _createRoute(ContentDetails(content: content)));
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage(content.poster),
-                fit: BoxFit.cover,
+    return GridView.builder(
+        physics: scrollLock
+            ? NeverScrollableScrollPhysics()
+            : AlwaysScrollableScrollPhysics(),
+        shrinkWrap: scrollLock,
+        padding: EdgeInsets.zero,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: gridCrossAxisCount(context),
+          crossAxisSpacing: 8.0,
+          mainAxisSpacing: 10.0,
+          childAspectRatio: 0.65,
+        ),
+        itemCount: contents.length,
+        itemBuilder: (BuildContext context, int index) {
+          Content content = contents[index];
+          return InkWell(
+            onTap: () {
+              Navigator.push(
+                  context,
+                  createRoute(ContentDetails(content: content),
+                      Offset(0.0, 1.0), Offset.zero));
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage(content.poster),
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
-          ),
-        );
-      }, childCount: contents.length),
-    );
+          );
+        });
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutterflix/helpers/logicHelpers.dart';
 import 'package:flutterflix/models/contentModel.dart';
 import 'package:flutterflix/widgets/contentGrid.dart';
-import 'package:flutterflix/widgets/customAppBar.dart';
 import 'package:flutterflix/data/data.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -18,25 +18,6 @@ class _SearchScreenState extends State<SearchScreen> {
     heading = "Top Searches";
     contents = topSearches;
     super.initState();
-  }
-
-  bool searchFilter(Content content, String searchString) {
-    searchString = searchString.toLowerCase();
-
-    if (content.name.toLowerCase().contains(searchString))
-      return true;
-    else if (content.description.toLowerCase().contains(searchString))
-      return true;
-    else if (content.category.toLowerCase().contains(searchString))
-      return true;
-    else if (content.genres
-        .any((element) => element.toLowerCase().contains(searchString)))
-      return true;
-    else if (content.cast
-        .any((element) => element.toLowerCase().contains(searchString)))
-      return true;
-
-    return false;
   }
 
   void onSearchChange(String newSearch) {
@@ -56,41 +37,61 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final Size screenSize = MediaQuery.of(context).size;
-
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: PreferredSize(
-          preferredSize: Size(screenSize.width, 50.0),
-          child: CustomAppBar(
-            scrollOffset: 350.0,
-            type: CustomAppBarType.search,
-            onChange: onSearchChange,
-          )),
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 70.0,
-            ),
-          ),
-          SliverPadding(
-            padding:
-                const EdgeInsets.symmetric(vertical: 20.0, horizontal: 24.0),
-            sliver: SliverToBoxAdapter(
-              child: Text(
-                heading,
+      appBar: AppBar(
+        actions: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 20.0),
+              child: TextField(
+                onChanged: onSearchChange,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 16.0,
                 ),
+                decoration: InputDecoration(
+                  fillColor: Colors.white30,
+                  filled: true,
+                  icon: Icon(
+                    Icons.search,
+                    color: Colors.white,
+                  ),
+                  hintText: 'Search name, cast, genre, details',
+                  hintStyle: const TextStyle(
+                    color: Colors.white54,
+                    fontSize: 16.0,
+                  ),
+                ),
+                autofocus: false,
               ),
             ),
           ),
-          ContentGrid(contents: contents)
         ],
+        backgroundColor: Colors.black.withOpacity(0.85),
       ),
+      body: SingleChildScrollView(
+          physics: ScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20.0, 75.0, 0.0, 35.0),
+                child: Text(
+                  heading,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              ContentGrid(
+                contents: contents,
+                scrollLock: true,
+              )
+            ],
+          )),
     );
   }
 }

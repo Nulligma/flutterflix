@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutterflix/models/episodeModel.dart';
+import 'package:flutterflix/models/trailerModel.dart';
 import 'package:meta/meta.dart';
 
 class Content {
   final String name;
   final String imageUrl;
+  final String imageUrlLandscape;
   final String poster;
   final String titleImageUrl;
   final String videoUrl;
@@ -21,10 +23,12 @@ class Content {
   final List<String> cast;
   final List<Episode> episodes;
   final List<String> seasons;
+  final List<Trailer> trailers;
 
   const Content(
       {@required this.name,
       @required this.imageUrl,
+      @required this.imageUrlLandscape,
       @required this.poster,
       @required this.titleImageUrl,
       @required this.videoUrl,
@@ -38,6 +42,7 @@ class Content {
       @required this.genres,
       @required this.cast,
       @required this.category,
+      @required this.trailers,
       this.episodes,
       this.seasons});
 }

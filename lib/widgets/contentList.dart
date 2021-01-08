@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutterflix/helpers/uiHelpers.dart';
 import 'package:flutterflix/models/contentModel.dart';
 import 'package:flutterflix/screens/contentDetailScreen.dart';
 
@@ -13,28 +14,6 @@ class ContentList extends StatelessWidget {
       @required this.contentList,
       this.isOriginals = false})
       : super(key: key);
-
-  Route _createRoute(Widget newPage) {
-    return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => newPage,
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        var begin = Offset(0.0, 1.0);
-        var end = Offset.zero;
-        var curve = Curves.ease;
-
-        var tween = Tween(begin: begin, end: end);
-        var curvedAnimation = CurvedAnimation(
-          parent: animation,
-          curve: curve,
-        );
-
-        return SlideTransition(
-          position: tween.animate(curvedAnimation),
-          child: child,
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,10 +40,12 @@ class ContentList extends StatelessWidget {
           itemCount: contentList.length,
           itemBuilder: (BuildContext context, int index) {
             final Content content = contentList[index];
-            return GestureDetector(
+            return InkWell(
                 onTap: () {
                   Navigator.push(
-                      context, _createRoute(ContentDetails(content: content)));
+                      context,
+                      createRoute(ContentDetails(content: content),
+                          Offset(0.0, 1.0), Offset.zero));
                 },
                 child: Container(
                   margin: const EdgeInsets.symmetric(horizontal: 8.0),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutterflix/helpers/uiHelpers.dart';
 import 'package:flutterflix/models/contentModel.dart';
 import 'package:flutterflix/screens/previewScreen.dart';
 
@@ -8,28 +9,6 @@ class Previews extends StatelessWidget {
 
   const Previews({Key key, @required this.title, @required this.contentList})
       : super(key: key);
-
-  Route _createRoute(Widget newPage) {
-    return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => newPage,
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        var begin = Offset(0.0, 1.0);
-        var end = Offset.zero;
-        var curve = Curves.ease;
-
-        var tween = Tween(begin: begin, end: end);
-        var curvedAnimation = CurvedAnimation(
-          parent: animation,
-          curve: curve,
-        );
-
-        return SlideTransition(
-          position: tween.animate(curvedAnimation),
-          child: child,
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,11 +38,13 @@ class Previews extends StatelessWidget {
             itemBuilder: (BuildContext context, int index) {
               final Content content = contentList[index];
 
-              return GestureDetector(
-                onTap: () =>
-                    Navigator.of(context).push(_createRoute(PreviewScreen(
-                  startingContent: index,
-                ))),
+              return InkWell(
+                onTap: () => Navigator.of(context).push(createRoute(
+                    PreviewScreen(
+                      startingContent: index,
+                    ),
+                    Offset(0.0, 1.0),
+                    Offset.zero)),
                 child: Stack(
                   alignment: Alignment.center,
                   children: [

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutterflix/data/data.dart';
+import 'package:flutterflix/helpers/uiHelpers.dart';
 import 'package:flutterflix/models/contentModel.dart';
 import 'package:flutterflix/screens/contentDetailScreen.dart';
+import 'package:flutterflix/widgets/contentDescription.dart';
 import 'package:flutterflix/widgets/customVideoPlayer.dart';
+import 'package:flutterflix/widgets/responsive.dart';
 import 'package:flutterflix/widgets/verticalIconButton.dart';
 
 enum ContentHeaderType { Home, Details, Previews }
@@ -65,19 +68,199 @@ class _ContentHeaderState extends State<ContentHeader> {
     );
   }
 
-  Widget get header {
-    return Container(
-      height:
-          widget.type == ContentHeaderType.Previews ? double.infinity : 500.0,
-      child: widget.type == ContentHeaderType.Previews
-          ? widget.videoPlayer
-          : Image(
-              image: AssetImage(widget.content.imageUrl),
-              fit: BoxFit.cover,
-              height: double.infinity,
-              width: double.infinity,
-            ),
+  Widget get headerMobile {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Container(
+          height: widget.type == ContentHeaderType.Previews
+              ? double.infinity
+              : 500.0,
+          child: widget.type == ContentHeaderType.Previews
+              ? widget.videoPlayer
+              : Image(
+                  image: AssetImage(widget.content.imageUrl),
+                  fit: BoxFit.cover,
+                  height: double.infinity,
+                  width: double.infinity,
+                ),
+        ),
+        Container(
+          height: widget.type == ContentHeaderType.Previews
+              ? double.infinity
+              : 501.0,
+          decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                  colors: [Colors.black, Colors.transparent],
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter)),
+        ),
+        Positioned(
+          bottom: 110.0,
+          child: SizedBox(
+              width: 250.0,
+              child: widget.type == ContentHeaderType.Details
+                  ? contentRatings
+                  : Image.asset(widget.content.titleImageUrl)),
+        ),
+        Positioned(
+            left: 0,
+            right: 0,
+            bottom: 40.0,
+            child: widget.type == ContentHeaderType.Details
+                ? _PlayButton()
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      VerticalIconButton(
+                        icon: myList.contains(widget.content)
+                            ? Icons.check
+                            : Icons.add,
+                        title: 'List',
+                        onTap: () {
+                          if (myList.contains(widget.content))
+                            myList.remove(widget.content);
+                          else
+                            myList.add(widget.content);
+
+                          setState(() {});
+                        },
+                      ),
+                      _PlayButton(),
+                      VerticalIconButton(
+                        icon: Icons.info_outline,
+                        title: 'Info',
+                        onTap: () => Navigator.push(
+                            context,
+                            createRoute(ContentDetails(content: widget.content),
+                                Offset(0.0, 1.0), Offset.zero)),
+                      ),
+                    ],
+                  ))
+      ],
     );
+  }
+
+  Widget get headerDesktop {
+    return Stack(children: [
+      Align(
+        alignment: Alignment.centerRight,
+        child: Container(
+          height: widget.type == ContentHeaderType.Previews
+              ? double.infinity
+              : 500.0,
+          width: 1200.0,
+          child: widget.type == ContentHeaderType.Previews
+              ? widget.videoPlayer
+              : Image(
+                  image: AssetImage(widget.content.imageUrlLandscape),
+                  fit: BoxFit.cover,
+                  height: double.infinity,
+                  width: double.infinity,
+                ),
+        ),
+      ),
+      Container(
+        height:
+            widget.type == ContentHeaderType.Previews ? double.infinity : 501.0,
+        width: MediaQuery.of(context).size.width - 200.0,
+        decoration: const BoxDecoration(
+            gradient: LinearGradient(colors: [
+          Colors.black,
+          Colors.black87,
+          Colors.black38,
+          Colors.transparent
+        ], stops: [
+          0.4,
+          0.6,
+          0.8,
+          1
+        ], begin: Alignment.centerLeft, end: Alignment.centerRight)),
+      ),
+      Positioned(
+          left: 60.0,
+          right: 60.0,
+          top: 100.0,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              widget.type == ContentHeaderType.Details
+                  ? Container()
+                  : SizedBox(
+                      width: 250.0,
+                      child: Image.asset(widget.content.titleImageUrl),
+                    ),
+              const SizedBox(height: 15.0),
+              Container(
+                width: 500.0,
+                child: Text(
+                  widget.content.description,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.w500,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black,
+                        offset: Offset(2.0, 4.0),
+                        blurRadius: 6.0,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              widget.type == ContentHeaderType.Details
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 15.0),
+                        Container(
+                          width: 250.0,
+                          child: contentRatings,
+                        ),
+                        Container(
+                          width: 500.0,
+                          child: ContentDescription(
+                            content: widget.content,
+                            setState: setState,
+                            noDescription: true,
+                          ),
+                        )
+                      ],
+                    )
+                  : Container(),
+              const SizedBox(height: 50.0),
+              Row(
+                children: [
+                  _PlayButton(),
+                  const SizedBox(width: 16.0),
+                  widget.type == ContentHeaderType.Details
+                      ? Container()
+                      : FlatButton.icon(
+                          padding:
+                              const EdgeInsets.fromLTRB(25.0, 10.0, 30.0, 10.0),
+                          onPressed: () => Navigator.push(
+                              context,
+                              createRoute(
+                                  ContentDetails(content: widget.content),
+                                  Offset(0.0, 1.0),
+                                  Offset.zero)),
+                          color: Colors.white,
+                          icon: const Icon(Icons.info_outline, size: 30.0),
+                          label: const Text(
+                            'More Info',
+                            style: TextStyle(
+                              fontSize: 16.0,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                  const SizedBox(width: 20.0),
+                ],
+              ),
+            ],
+          )),
+    ]);
   }
 
   String durationToString(int minutes) {
@@ -86,84 +269,12 @@ class _ContentHeaderState extends State<ContentHeader> {
     return '${parts[0].padLeft(2, '0')}h ${parts[1].padLeft(2, '0')}m';
   }
 
-  Route _createRoute(Widget newPage) {
-    return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => newPage,
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        var begin = Offset(0.0, 1.0);
-        var end = Offset.zero;
-        var curve = Curves.ease;
-
-        var tween = Tween(begin: begin, end: end);
-        var curvedAnimation = CurvedAnimation(
-          parent: animation,
-          curve: curve,
-        );
-
-        return SlideTransition(
-          position: tween.animate(curvedAnimation),
-          child: child,
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Stack(alignment: Alignment.center, children: [
-      header,
-      Container(
-        height:
-            widget.type == ContentHeaderType.Previews ? double.infinity : 501.0,
-        decoration: const BoxDecoration(
-            gradient: LinearGradient(
-                colors: [Colors.black, Colors.transparent],
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter)),
-      ),
-      Positioned(
-        bottom: 110.0,
-        child: SizedBox(
-            width: 250.0,
-            child: widget.type == ContentHeaderType.Details
-                ? contentRatings
-                : Image.asset(widget.content.titleImageUrl)),
-      ),
-      Positioned(
-          left: 0,
-          right: 0,
-          bottom: 40.0,
-          child: widget.type == ContentHeaderType.Details
-              ? _PlayButton()
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    VerticalIconButton(
-                      icon: myList.contains(widget.content)
-                          ? Icons.check
-                          : Icons.add,
-                      title: 'List',
-                      onTap: () {
-                        if (myList.contains(widget.content))
-                          myList.remove(widget.content);
-                        else
-                          myList.add(widget.content);
-
-                        setState(() {});
-                      },
-                    ),
-                    _PlayButton(),
-                    VerticalIconButton(
-                      icon: Icons.info_outline,
-                      title: 'Info',
-                      onTap: () => Navigator.push(
-                          context,
-                          _createRoute(
-                              ContentDetails(content: widget.content))),
-                    ),
-                  ],
-                ))
-    ]);
+    return Responsive(
+      mobile: headerMobile,
+      desktop: headerDesktop,
+    );
   }
 }
 

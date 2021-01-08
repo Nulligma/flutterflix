@@ -30,6 +30,9 @@ dependencies:
   cupertino_icons: ^1.0.0
   video_player: ^1.0.1
   chewie: ^0.12.0
+  firebase_core:
+  firebase_auth:
+  cloud_firestore:
 
 dev_dependencies:
   flutter_test:
@@ -48,7 +51,9 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+    - assets/background/
     - assets/images/
+    - assets/images/trailers/
     - assets/images/atla_episodes/
     - assets/images/blackMirror_episodes/
     - assets/images/breakingBad_episodes/
