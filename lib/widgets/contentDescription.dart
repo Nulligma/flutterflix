@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutterflix/data/data.dart';
+import 'package:flutterflix/database/clouddata.dart';
 import 'package:flutterflix/models/contentModel.dart';
 
 class ContentDescription extends StatelessWidget {
@@ -63,10 +63,10 @@ class ContentDescription extends StatelessWidget {
                     height: 50.0,
                     child: InkWell(
                       onTap: () {
-                        if (myList.contains(content))
-                          myList.remove(content);
+                        if (Cloud.myList.contains(content))
+                          Cloud.updateMyList(content, false);
                         else
-                          myList.add(content);
+                          Cloud.updateMyList(content, true);
 
                         setState(() {});
                       },
@@ -74,7 +74,9 @@ class ContentDescription extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: <Widget>[
                           Icon(
-                            myList.contains(content) ? Icons.check : Icons.add,
+                            Cloud.myList.contains(content)
+                                ? Icons.check
+                                : Icons.add,
                             size: 32.0,
                           ),
                           Text(

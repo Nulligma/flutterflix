@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutterflix/database/clouddata.dart';
 import 'package:flutterflix/helpers/uiHelpers.dart';
+import 'package:flutterflix/models/contentModel.dart';
 import 'package:flutterflix/models/notificationModel.dart';
 import 'package:flutterflix/screens/contentDetailScreen.dart';
 
@@ -8,8 +10,10 @@ class NotificationBox extends StatelessWidget {
   static const double height = 200.0;
 
   final List<NotificationData> notifications;
+  final Function hideNotification;
 
-  const NotificationBox({Key key, @required this.notifications})
+  const NotificationBox(
+      {Key key, @required this.notifications, @required this.hideNotification})
       : super(key: key);
 
   Widget get body {
@@ -34,22 +38,23 @@ class NotificationBox extends StatelessWidget {
             );
           },
           itemBuilder: (BuildContext context, int index) {
+            Content content = Cloud.allContent.firstWhere((Content content) =>
+                content.id == notifications[index].contentId);
             return ListTile(
               contentPadding: EdgeInsets.symmetric(vertical: 5.0),
               hoverColor: Colors.white.withOpacity(0.5),
-              leading: CircleAvatar(
-                  backgroundImage: AssetImage(notifications[index].image)),
+              leading:
+                  CircleAvatar(backgroundImage: NetworkImage(content.poster)),
               title: Text(
                 notifications[index].title,
                 style: TextStyle(color: Colors.white),
               ),
               onTap: () {
+                hideNotification();
                 Navigator.push(
                     context,
-                    createRoute(
-                        ContentDetails(content: notifications[index].content),
-                        Offset(0.0, 1.0),
-                        Offset.zero));
+                    createRoute(ContentDetails(content: content),
+                        Offset(0.0, 1.0), Offset.zero));
               },
             );
           },

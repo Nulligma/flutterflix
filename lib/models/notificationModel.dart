@@ -1,9 +1,23 @@
 import 'package:flutterflix/models/contentModel.dart';
 
 class NotificationData {
-  final String image;
-  final String title;
-  final Content content;
+  String id;
+  String title;
+  String contentId;
 
-  NotificationData(this.image, this.title, this.content);
+  Map<String, dynamic> variableMap;
+
+  NotificationData(this.id, this.title, this.contentId) {
+    variableMap = {
+      "id": this.id,
+      "title": this.title,
+      "contentId": this.contentId
+    };
+  }
+
+  NotificationData.fromMap(Map<String, dynamic> newMap) {
+    this.id = newMap["id"];
+    this.title = newMap["title"];
+    this.contentId = newMap["contentId"];
+  }
 }

@@ -22,37 +22,40 @@ class ContentGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-        physics: scrollLock
-            ? NeverScrollableScrollPhysics()
-            : AlwaysScrollableScrollPhysics(),
-        shrinkWrap: scrollLock,
-        padding: EdgeInsets.zero,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: gridCrossAxisCount(context),
-          crossAxisSpacing: 8.0,
-          mainAxisSpacing: 10.0,
-          childAspectRatio: 0.65,
-        ),
-        itemCount: contents.length,
-        itemBuilder: (BuildContext context, int index) {
-          Content content = contents[index];
-          return InkWell(
-            onTap: () {
-              Navigator.push(
-                  context,
-                  createRoute(ContentDetails(content: content),
-                      Offset(0.0, 1.0), Offset.zero));
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage(content.poster),
-                  fit: BoxFit.cover,
+    return WillPopScope(
+      onWillPop: () async => true,
+      child: GridView.builder(
+          physics: scrollLock
+              ? NeverScrollableScrollPhysics()
+              : AlwaysScrollableScrollPhysics(),
+          shrinkWrap: scrollLock,
+          padding: EdgeInsets.zero,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: gridCrossAxisCount(context),
+            crossAxisSpacing: 8.0,
+            mainAxisSpacing: 10.0,
+            childAspectRatio: 0.65,
+          ),
+          itemCount: contents.length,
+          itemBuilder: (BuildContext context, int index) {
+            Content content = contents[index];
+            return InkWell(
+              onTap: () {
+                Navigator.push(
+                    context,
+                    createRoute(ContentDetails(content: content),
+                        Offset(0.0, 1.0), Offset.zero));
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: NetworkImage(content.poster),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
-            ),
-          );
-        });
+            );
+          }),
+    );
   }
 }

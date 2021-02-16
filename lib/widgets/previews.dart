@@ -56,7 +56,7 @@ class Previews extends StatelessWidget {
                         shape: BoxShape.circle,
                         border: Border.all(color: content.color, width: 2.5),
                         image: DecorationImage(
-                            image: AssetImage(content.poster),
+                            image: NetworkImage(content.poster),
                             fit: BoxFit.cover),
                       ),
                     ),
@@ -83,7 +83,7 @@ class Previews extends StatelessWidget {
                       bottom: 0,
                       child: SizedBox(
                         height: 35.0,
-                        child: Image.asset(content.titleImageUrl),
+                        child: Image.network(content.titleImageUrl),
                       ),
                     ),
                   ],

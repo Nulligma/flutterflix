@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutterflix/database/clouddata.dart';
 import 'package:flutterflix/helpers/logicHelpers.dart';
 import 'package:flutterflix/models/contentModel.dart';
 import 'package:flutterflix/widgets/contentGrid.dart';
-import 'package:flutterflix/data/data.dart';
 
 class SearchScreen extends StatefulWidget {
   @override
@@ -16,7 +16,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void initState() {
     heading = "Top Searches";
-    contents = topSearches;
+    contents = Cloud.topSearches;
     super.initState();
   }
 
@@ -25,10 +25,10 @@ class _SearchScreenState extends State<SearchScreen> {
     setState(() {
       if (newSearch.isEmpty) {
         heading = "Top Searches";
-        contents = topSearches;
+        contents = Cloud.topSearches;
       } else {
         heading = "Movies & TV Shows";
-        contents = allContent
+        contents = Cloud.allContent
             .where((content) => searchFilter(content, newSearch))
             .toList();
       }

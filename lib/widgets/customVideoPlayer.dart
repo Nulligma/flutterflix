@@ -1,12 +1,21 @@
+import 'dart:html';
+
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
 
+enum PlayerType { preview, content }
+
 class CustomVideoPlayer extends StatefulWidget {
   final String videoUrl;
   final Function onVideoEnded;
+  final PlayerType type;
 
-  const CustomVideoPlayer({Key key, this.videoUrl, this.onVideoEnded})
+  const CustomVideoPlayer(
+      {Key key,
+      @required this.type,
+      @required this.videoUrl,
+      this.onVideoEnded})
       : super(key: key);
 
   @override
@@ -19,8 +28,8 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
 
   @override
   void initState() {
-    _initControllers(widget.videoUrl);
     super.initState();
+    _initControllers(widget.videoUrl);
   }
 
   @override
@@ -33,16 +42,37 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
   Future<void> _initControllers(String url) async {
     _controller = VideoPlayerController.network(url);
     await _controller.initialize();
-    _chewie = ChewieController(
-      aspectRatio: 9 / 16,
-      videoPlayerController: _controller,
-      showControls: false,
-      autoPlay: true,
-    );
-    _controller.addListener(() {
-      if (_controller.value.position == _controller.value.duration)
-        widget.onVideoEnded();
+
+    switch (widget.type) {
+      case PlayerType.preview:
+        _chewie = ChewieController(
+          videoPlayerController: _controller,
+          aspectRatio: _controller.value.aspectRatio,
+          showControls: false,
+          autoPlay: true,
+        );
+        break;
+      case PlayerType.content:
+        _chewie = ChewieController(
+          videoPlayerController: _controller,
+          aspectRatio: _controller.value.aspectRatio,
+        );
+        break;
+    }
+
+    _chewie.addListener(() {
+      if (_chewie.isFullScreen)
+        document.documentElement.requestFullscreen();
+      else
+        document.exitFullscreen();
     });
+
+    if (widget.onVideoEnded != null)
+      _controller.addListener(() {
+        if (_controller.value.position == _controller.value.duration)
+          widget.onVideoEnded();
+      });
+
     setState(() {});
   }
 
@@ -58,7 +88,10 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
               children: const [
                 CircularProgressIndicator(),
                 SizedBox(height: 20),
-                Text('Loading'),
+                Text(
+                  'Loading',
+                  style: TextStyle(color: Colors.white),
+                ),
               ],
             ),
     );

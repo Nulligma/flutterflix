@@ -1,31 +1,43 @@
 class Episode {
-  final int number;
-  final String season;
-  final String image;
-  final String summary;
-  final String name;
-  final int duration;
+  int number;
+  String name;
+  String seasonName;
+  String imageUrl;
+  String videoUrl;
+  String summary;
+  int duration;
+
+  Map<String, dynamic> variableMap;
 
   Episode(
       {this.number,
-      this.season,
-      this.image,
-      this.summary,
       this.name,
-      this.duration});
+      this.seasonName,
+      this.imageUrl,
+      this.videoUrl =
+          "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
+      this.summary,
+      this.duration}) {
+    variableMap = {
+      "number": number,
+      "name": name,
+      "seasonName": seasonName,
+      "imageUrl": imageUrl,
+      "videoUrl": videoUrl,
+      "summary": summary,
+      "duration": duration
+    };
+  }
 
-  /* Episode.fromJson(Map<String, dynamic> parsedJson) {
-    RegExp exp = new RegExp(r"<[^>]*>");
-    number = parsedJson['number'];
-    season = parsedJson['season'];
-    image = (parsedJson['image'] ?? {})['medium'];
-    summary = parsedJson['summary'] != null
-        ? parsedJson['summary'].replaceAll(exp, '')
-        : '';
-    name = parsedJson['name'];
-    duration = parsedJson['airtime'] != null &&
-            parsedJson['airtime'].toString().isNotEmpty
-        ? int.parse(parsedJson['airtime'].split(':')[0])
-        : 0;
-  } */
+  Episode.fromMap(Map<String, dynamic> newMap) {
+    this.number = newMap["number"];
+    this.name = newMap["name"];
+    this.seasonName = newMap["seasonName"];
+    this.imageUrl = newMap["imageUrl"];
+    this.videoUrl = newMap["videoUrl"];
+    this.summary = newMap["summary"];
+    this.duration = newMap["duration"];
+
+    this.variableMap = newMap;
+  }
 }

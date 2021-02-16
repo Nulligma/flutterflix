@@ -18,3 +18,12 @@ bool searchFilter(Content content, String searchString) {
 
   return false;
 }
+
+// ignore: non_constant_identifier_names
+int getColorInt_fromString(String colorString) {
+  String valueString =
+      colorString.split('(0x')[1].split(')')[0]; // kind of hacky..
+  int value = int.parse(valueString, radix: 16);
+
+  return value;
+}

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutterflix/screens/profileScreen.dart';
 import 'package:flutterflix/screens/screens.dart';
 import 'package:flutterflix/screens/searchScreen.dart';
 import 'package:flutterflix/widgets/responsive.dart';
@@ -12,7 +13,7 @@ class _NavScreenState extends State<NavScreen> {
   final List<Widget> _screens = [
     HomeScreen(type: HomeScreenType.none),
     SearchScreen(),
-    Scaffold(),
+    ProfileScreen(),
   ];
 
   final Map<String, IconData> _icons = const {
@@ -27,7 +28,7 @@ class _NavScreenState extends State<NavScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: _screens[_currentIndex],
-        bottomNavigationBar: !Responsive.isDesktop(context)
+        bottomNavigationBar: Responsive.isMobile(context)
             ? BottomNavigationBar(
                 type: BottomNavigationBarType.fixed,
                 backgroundColor: Colors.black,

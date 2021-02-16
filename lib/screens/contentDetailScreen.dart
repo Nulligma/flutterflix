@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutterflix/data/data.dart';
+import 'package:flutterflix/database/clouddata.dart';
+import 'package:flutterflix/helpers/uiHelpers.dart';
 import 'package:flutterflix/models/contentModel.dart';
 import 'package:flutterflix/models/episodeModel.dart';
 import 'package:flutterflix/models/trailerModel.dart';
+import 'package:flutterflix/screens/homeScreen.dart';
 import 'package:flutterflix/widgets/contentDescription.dart';
 import 'package:flutterflix/widgets/contentGrid.dart';
+import 'package:flutterflix/widgets/customVideoPlayer.dart';
 import 'package:flutterflix/widgets/responsive.dart';
 import 'package:flutterflix/widgets/widgets.dart';
 
@@ -20,7 +23,6 @@ class ContentDetails extends StatefulWidget {
 class _ContentDetailsState extends State<ContentDetails>
     with SingleTickerProviderStateMixin {
   String currentSeason;
-  bool isaMovie;
 
   List<Tab> contentTabs;
   List<Episode> seasonEpisodes;
@@ -28,11 +30,42 @@ class _ContentDetailsState extends State<ContentDetails>
   TabController _tabController;
   int selectedIndex = 0;
 
+  bool episodesLoaded;
+  bool trailersLoaded;
+
   @override
   void initState() {
-    isaMovie = widget.content.episodes == null;
+    super.initState();
+    episodesLoaded = trailersLoaded = true;
 
-    if (isaMovie) {
+    if (widget.content.category == ContentCategory.TV_SHOW) {
+      if (widget.content.episodes.length == 0) {
+        episodesLoaded = trailersLoaded = false;
+        Cloud.getEpisodes(widget.content).then((_) {
+          episodesLoaded = true;
+          Cloud.getTrailers(widget.content).then((_) {
+            trailersLoaded = true;
+            initRest();
+            setState(() {});
+          });
+        });
+      } else
+        initRest();
+    } else if (widget.content.category == ContentCategory.MOVIES) {
+      if (widget.content.trailers.length == 0) {
+        trailersLoaded = false;
+        Cloud.getTrailers(widget.content).then((_) {
+          trailersLoaded = true;
+          initRest();
+          setState(() {});
+        });
+      } else
+        initRest();
+    }
+  }
+
+  void initRest() {
+    if (widget.content.category == ContentCategory.MOVIES) {
       contentTabs = <Tab>[
         Tab(text: 'TRAILERS & MORE'),
         Tab(text: 'MORE LIKE THIS'),
@@ -47,14 +80,12 @@ class _ContentDetailsState extends State<ContentDetails>
       currentSeason = widget.content.seasons[0];
 
       seasonEpisodes = widget.content.episodes
-          .where((Episode e) => e.season == currentSeason)
+          .where((Episode e) => e.seasonName == currentSeason)
           .toList();
     }
 
     _tabController = TabController(
         initialIndex: selectedIndex, vsync: this, length: contentTabs.length);
-
-    super.initState();
   }
 
   @override
@@ -68,13 +99,13 @@ class _ContentDetailsState extends State<ContentDetails>
       currentSeason = newSeason;
 
       seasonEpisodes = widget.content.episodes
-          .where((Episode e) => e.season == currentSeason)
+          .where((Episode e) => e.seasonName == currentSeason)
           .toList();
     });
   }
 
   List<Widget> get tabs {
-    if (isaMovie) {
+    if (widget.content.category == ContentCategory.MOVIES) {
       return [
         Visibility(
           child: _TrailerList(
@@ -85,7 +116,7 @@ class _ContentDetailsState extends State<ContentDetails>
         ),
         Visibility(
           child: ContentGrid(
-            contents: allContent,
+            contents: Cloud.allContent,
             scrollLock: true,
           ),
           maintainState: true,
@@ -112,7 +143,7 @@ class _ContentDetailsState extends State<ContentDetails>
         ),
         Visibility(
           child: ContentGrid(
-            contents: allContent,
+            contents: Cloud.allContent,
             scrollLock: true,
           ),
           maintainState: true,
@@ -126,7 +157,7 @@ class _ContentDetailsState extends State<ContentDetails>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        isaMovie
+        widget.content.category == ContentCategory.MOVIES
             ? Container()
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -180,7 +211,10 @@ class _ContentDetailsState extends State<ContentDetails>
         ),
         ContentList(
           title: 'MORE LIKE THIS',
-          contentList: allContent,
+          contentList: Cloud.allContent
+              .where((Content c) =>
+                  c.genres.any((String s) => widget.content.genres.contains(s)))
+              .toList(),
         ),
         SizedBox(
           height: 50.0,
@@ -197,47 +231,51 @@ class _ContentDetailsState extends State<ContentDetails>
         title: Text(widget.content.name),
         backgroundColor: Colors.black.withOpacity(0.5),
       ),
-      body: SingleChildScrollView(
-        physics: ScrollPhysics(),
-        child: Column(
-          children: [
-            ContentHeader(
-                content: widget.content, type: ContentHeaderType.Details),
-            Responsive(
-              desktop: Container(),
-              mobile: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: ContentDescription(
-                  content: widget.content,
-                  setState: setState,
-                  noDescription: false,
-                ),
-              ),
-            ),
-            Responsive(
-              desktop: contentListForDesktop,
-              mobile: Column(
+      body: episodesLoaded && trailersLoaded
+          ? SingleChildScrollView(
+              physics: ScrollPhysics(),
+              child: Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 20.0),
-                    child: TabBar(
-                      controller: _tabController,
-                      tabs: contentTabs,
-                      onTap: (int index) {
-                        setState(() {
-                          selectedIndex = index;
-                          _tabController.animateTo(index);
-                        });
-                      },
+                  ContentHeader(
+                      content: widget.content, type: ContentHeaderType.Details),
+                  Responsive(
+                    desktop: Container(),
+                    mobile: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: ContentDescription(
+                        content: widget.content,
+                        setState: setState,
+                        noDescription: false,
+                      ),
                     ),
                   ),
-                  IndexedStack(index: selectedIndex, children: tabs)
+                  Responsive(
+                    desktop: contentListForDesktop,
+                    mobile: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 20.0),
+                          child: TabBar(
+                            controller: _tabController,
+                            tabs: contentTabs,
+                            onTap: (int index) {
+                              setState(() {
+                                selectedIndex = index;
+                                _tabController.animateTo(index);
+                              });
+                            },
+                          ),
+                        ),
+                        IndexedStack(index: selectedIndex, children: tabs)
+                      ],
+                    ),
+                  )
                 ],
               ),
             )
-          ],
-        ),
-      ),
+          : Center(
+              child: CircularProgressIndicator(),
+            ),
     );
   }
 }
@@ -331,7 +369,7 @@ class _EpisodeTile extends StatelessWidget {
     this.seasonEpisodes,
   }) : super(key: key);
 
-  Widget get episodeForMobile {
+  Widget episodeForMobile(BuildContext context) {
     return Container(
       margin: EdgeInsets.only(bottom: 16.0),
       child: Column(
@@ -339,38 +377,54 @@ class _EpisodeTile extends StatelessWidget {
         children: <Widget>[
           Row(
             children: <Widget>[
-              Container(
-                margin: EdgeInsets.only(right: 8.0),
-                width: 150.0,
-                height: 90.0,
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage(seasonEpisodes[index].image),
+              InkWell(
+                onTap: () => Navigator.push(
+                    context,
+                    createRoute(
+                        Scaffold(
+                          appBar: AppBar(
+                            title: Text(seasonEpisodes[index].name),
+                          ),
+                          backgroundColor: Colors.black,
+                          body: CustomVideoPlayer(
+                              type: PlayerType.content,
+                              videoUrl: seasonEpisodes[index].videoUrl),
+                        ),
+                        Offset(0.0, 1.0),
+                        Offset.zero)),
+                child: Container(
+                  margin: EdgeInsets.only(right: 8.0),
+                  width: 150.0,
+                  height: 90.0,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: NetworkImage(seasonEpisodes[index].imageUrl),
+                    ),
                   ),
-                ),
-                child: Center(
-                  child: Container(
-                    height: 32.0,
-                    width: 32.0,
-                    child: OutlineButton(
-                      padding: EdgeInsets.all(0.0),
-                      onPressed: () => print('play'),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(32.0),
+                  child: Center(
+                    child: Container(
+                      height: 32.0,
+                      width: 32.0,
+                      child: OutlineButton(
+                        padding: EdgeInsets.all(0.0),
+                        onPressed: () {},
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(32.0),
+                          ),
                         ),
-                      ),
-                      child: Container(
-                        height: 32.0,
-                        width: 32.0,
-                        decoration: BoxDecoration(
-                          color: Color.fromRGBO(0, 0, 0, 0.3),
-                          borderRadius: BorderRadius.circular(16.0),
-                        ),
-                        child: Icon(
-                          Icons.play_arrow,
-                          color: Colors.white,
-                          size: 24.0,
+                        child: Container(
+                          height: 32.0,
+                          width: 32.0,
+                          decoration: BoxDecoration(
+                            color: Color.fromRGBO(0, 0, 0, 0.3),
+                            borderRadius: BorderRadius.circular(16.0),
+                          ),
+                          child: Icon(
+                            Icons.play_arrow,
+                            color: Colors.white,
+                            size: 24.0,
+                          ),
                         ),
                       ),
                     ),
@@ -422,79 +476,96 @@ class _EpisodeTile extends StatelessWidget {
     );
   }
 
-  Widget get episodeForDesktop {
+  Widget episodeForDesktop(BuildContext context) {
     double tileWidth = 200.0;
     double tileHeight = 130.0;
-    return Stack(
-      alignment: AlignmentDirectional.bottomStart,
-      children: [
-        Container(
-          margin: EdgeInsets.only(right: 15.0),
-          width: tileWidth,
-          height: tileHeight,
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage(seasonEpisodes[index].image),
-            ),
-          ),
-          child: Center(
-            child: Container(
-              height: 32.0,
-              width: 32.0,
-              child: OutlineButton(
-                padding: EdgeInsets.all(0.0),
-                onPressed: () => print('play'),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(32.0),
-                  ),
+    return InkWell(
+      onTap: () => Navigator.push(
+          context,
+          createRoute(
+              Scaffold(
+                appBar: AppBar(
+                  title: Text(seasonEpisodes[index].name),
                 ),
-                child: Container(
-                  height: 32.0,
-                  width: 32.0,
-                  decoration: BoxDecoration(
-                    color: Color.fromRGBO(0, 0, 0, 0.3),
-                    borderRadius: BorderRadius.circular(16.0),
+                backgroundColor: Colors.black,
+                body: CustomVideoPlayer(
+                    type: PlayerType.content,
+                    videoUrl: seasonEpisodes[index].videoUrl),
+              ),
+              Offset(0.0, 1.0),
+              Offset.zero)),
+      child: Stack(
+        alignment: AlignmentDirectional.bottomStart,
+        children: [
+          Container(
+            margin: EdgeInsets.only(right: 15.0),
+            width: tileWidth,
+            height: tileHeight,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: NetworkImage(seasonEpisodes[index].imageUrl),
+              ),
+            ),
+            child: Center(
+              child: Container(
+                height: 32.0,
+                width: 32.0,
+                child: OutlineButton(
+                  padding: EdgeInsets.all(0.0),
+                  onPressed: () {},
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(32.0),
+                    ),
                   ),
-                  child: Icon(
-                    Icons.play_arrow,
-                    color: Colors.white,
-                    size: 24.0,
+                  child: Container(
+                    height: 32.0,
+                    width: 32.0,
+                    decoration: BoxDecoration(
+                      color: Color.fromRGBO(0, 0, 0, 0.3),
+                      borderRadius: BorderRadius.circular(16.0),
+                    ),
+                    child: Icon(
+                      Icons.play_arrow,
+                      color: Colors.white,
+                      size: 24.0,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
-        Container(
-          width: tileWidth,
-          height: tileHeight,
-          decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                  colors: [Colors.black, Colors.transparent],
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter)),
-        ),
-        SizedBox(
-          width: tileWidth,
-          child: Text(
-            '${index + 1}. ${seasonEpisodes[index].name}',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontWeight: FontWeight.w400,
-              fontSize: 14.0,
-              color: Color.fromRGBO(255, 255, 255, 0.8),
+          Container(
+            width: tileWidth,
+            height: tileHeight,
+            decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                    colors: [Colors.black, Colors.transparent],
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter)),
+          ),
+          SizedBox(
+            width: tileWidth,
+            child: Text(
+              '${index + 1}. ${seasonEpisodes[index].name}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: FontWeight.w400,
+                fontSize: 14.0,
+                color: Color.fromRGBO(255, 255, 255, 0.8),
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Responsive(desktop: episodeForDesktop, mobile: episodeForMobile);
+    return Responsive(
+        desktop: episodeForDesktop(context), mobile: episodeForMobile(context));
   }
 }
 
@@ -540,75 +611,93 @@ class _TrailerTile extends StatelessWidget {
         margin: Responsive.isDesktop(context) || Responsive.isTablet(context)
             ? EdgeInsets.only(right: 15.0)
             : EdgeInsets.only(bottom: 24.0),
-        child: Stack(alignment: AlignmentDirectional.bottomStart, children: <
-            Widget>[
-          Container(
-            width: Responsive.isDesktop(context) || Responsive.isTablet(context)
-                ? 200
-                : double.infinity,
-            height:
-                Responsive.isDesktop(context) || Responsive.isTablet(context)
-                    ? 133
-                    : 300.0,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                fit: BoxFit.cover,
-                image: AssetImage(trailer.image),
-              ),
-            ),
-            child: Center(
-              child: Container(
-                height: 32.0,
-                width: 32.0,
-                child: OutlineButton(
-                  padding: EdgeInsets.all(0.0),
-                  onPressed: () => print('play'),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(32.0),
+        child: InkWell(
+          onTap: () => Navigator.push(
+              context,
+              createRoute(
+                  Scaffold(
+                    appBar: AppBar(
+                      title: Text(trailer.name),
+                    ),
+                    backgroundColor: Colors.black,
+                    body: CustomVideoPlayer(
+                        type: PlayerType.content, videoUrl: trailer.videoUrl),
+                  ),
+                  Offset(0.0, 1.0),
+                  Offset.zero)),
+          child: Stack(
+              alignment: AlignmentDirectional.bottomStart,
+              children: <Widget>[
+                Container(
+                  width: Responsive.isDesktop(context) ||
+                          Responsive.isTablet(context)
+                      ? 200
+                      : double.infinity,
+                  height: Responsive.isDesktop(context) ||
+                          Responsive.isTablet(context)
+                      ? 133
+                      : 300.0,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      fit: BoxFit.cover,
+                      image: NetworkImage(trailer.imageUrl),
                     ),
                   ),
-                  child: Container(
-                    height: 32.0,
-                    width: 32.0,
-                    decoration: BoxDecoration(
-                      color: Color.fromRGBO(0, 0, 0, 0.3),
-                      borderRadius: BorderRadius.circular(16.0),
-                    ),
-                    child: Icon(
-                      Icons.play_arrow,
-                      color: Colors.white,
-                      size: 24.0,
+                  child: Center(
+                    child: Container(
+                      height: 32.0,
+                      width: 32.0,
+                      child: OutlineButton(
+                        padding: EdgeInsets.all(0.0),
+                        onPressed: () {},
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(32.0),
+                          ),
+                        ),
+                        child: Container(
+                          height: 32.0,
+                          width: 32.0,
+                          decoration: BoxDecoration(
+                            color: Color.fromRGBO(0, 0, 0, 0.3),
+                            borderRadius: BorderRadius.circular(16.0),
+                          ),
+                          child: Icon(
+                            Icons.play_arrow,
+                            color: Colors.white,
+                            size: 24.0,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
-          ),
-          Container(
-            width: Responsive.isDesktop(context) || Responsive.isTablet(context)
-                ? 200
-                : double.infinity,
-            height:
-                Responsive.isDesktop(context) || Responsive.isTablet(context)
-                    ? 133
-                    : 300.0,
-            decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                    colors: [Colors.black, Colors.transparent],
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter)),
-          ),
-          Text(
-            trailer.title,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 14.0,
-              color: Color.fromRGBO(255, 255, 255, 0.8),
-            ),
-          )
-        ]));
+                Container(
+                  width: Responsive.isDesktop(context) ||
+                          Responsive.isTablet(context)
+                      ? 200
+                      : double.infinity,
+                  height: Responsive.isDesktop(context) ||
+                          Responsive.isTablet(context)
+                      ? 133
+                      : 300.0,
+                  decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                          colors: [Colors.black, Colors.transparent],
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter)),
+                ),
+                Text(
+                  trailer.name,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14.0,
+                    color: Color.fromRGBO(255, 255, 255, 0.8),
+                  ),
+                )
+              ]),
+        ));
   }
 }

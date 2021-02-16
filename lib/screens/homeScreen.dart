@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutterflix/data/data.dart';
+import 'package:flutterflix/database/clouddata.dart';
 import 'package:flutterflix/helpers/logicHelpers.dart';
 import 'package:flutterflix/models/contentModel.dart';
 import 'package:flutterflix/widgets/contentGrid.dart';
 import 'package:flutterflix/widgets/notificationBox.dart';
 import 'package:flutterflix/widgets/widgets.dart';
-import 'dart:math';
 
 enum HomeScreenType {
   none,
@@ -32,8 +31,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   ScrollController _scrollController;
   double _scrollOffset = 0.0;
-  int randomFeatureIndex;
-  List<Content> modifiedFeatures;
+  Content feature;
   List<Content> modifiedMyList;
   List<Content> modifiedPreviews;
   List<Content> modifiedOriginals;
@@ -57,30 +55,34 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       });
 
-    if (widget.type != HomeScreenType.none &&
-        widget.type != HomeScreenType.mylist) {
+    if (widget.type == HomeScreenType.tvshows ||
+        widget.type == HomeScreenType.movies) {
       String category = widget.category;
 
-      modifiedFeatures =
-          feature.where((el) => el.category == category).toList();
-      modifiedPreviews =
-          previews.where((el) => el.category == category).toList();
-      modifiedOriginals =
-          originals.where((el) => el.category == category).toList();
-      modifiedTrending =
-          trending.where((el) => el.category == category).toList();
+      if (category == ContentCategory.MOVIES)
+        feature = Cloud.featureMovie;
+      else if (category == ContentCategory.TV_SHOW) feature = Cloud.featureTv;
 
-      modifiedMyList = myList.where((el) => el.category == category).toList();
-    } else {
-      modifiedFeatures = feature;
-      modifiedMyList = myList;
-      modifiedPreviews = previews;
-      modifiedOriginals = originals;
-      modifiedTrending = trending;
+      modifiedPreviews =
+          Cloud.previews.where((el) => el.category == category).toList();
+      modifiedOriginals =
+          Cloud.originals.where((el) => el.category == category).toList();
+      modifiedTrending =
+          Cloud.trending.where((el) => el.category == category).toList();
+
+      modifiedMyList =
+          Cloud.myList.where((el) => el.category == category).toList();
+    } else if (widget.type == HomeScreenType.none) {
+      feature = Cloud.featureHome;
+      modifiedMyList = Cloud.myList;
+      modifiedPreviews = Cloud.previews;
+      modifiedOriginals = Cloud.originals;
+      modifiedTrending = Cloud.trending;
+    } else if (widget.type == HomeScreenType.mylist) {
+      modifiedMyList = Cloud.myList;
     }
 
-    randomFeatureIndex = Random().nextInt(modifiedFeatures.length);
-    genre = genres[0];
+    genre = Cloud.genres[0];
     searchString = "";
 
     showingNotification = false;
@@ -101,13 +103,8 @@ class _HomeScreenState extends State<HomeScreen> {
         top: appBarSize + 10.0,
         width: NotificationBox.width,
         child: NotificationBox(
-          notifications: [
-            notification1,
-            notification2,
-            notification3,
-            notification4
-          ],
-        ),
+            notifications: Cloud.notificationList,
+            hideNotification: removeNotification),
       );
     });
   }
@@ -137,13 +134,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void changeGenre(String newGenre) {
-    if (newGenre == genres[0]) {
+    if (newGenre == Cloud.genres[0]) {
       return;
     }
 
     setState(() {
       genre = newGenre;
-      modifiedMyList = allContent
+      modifiedMyList = Cloud.allContent
           .where((el) =>
               el.category == widget.category && el.genres.contains(genre))
           .toList();
@@ -154,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       searchString = newSearchString;
 
-      modifiedMyList = allContent
+      modifiedMyList = Cloud.allContent
           .where((content) => searchFilter(content, newSearchString))
           .toList();
     });
@@ -163,9 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Widget> get multiList {
     return [
       SliverToBoxAdapter(
-          child: ContentHeader(
-              content: modifiedFeatures[randomFeatureIndex],
-              type: ContentHeaderType.Home)),
+          child: ContentHeader(content: feature, type: ContentHeaderType.Home)),
       SliverPadding(
         padding: const EdgeInsets.only(top: 20.0),
         sliver: SliverToBoxAdapter(
@@ -231,8 +226,23 @@ class _HomeScreenState extends State<HomeScreen> {
       return true;
     else if (widget.type == HomeScreenType.movies ||
         widget.type == HomeScreenType.tvshows) {
-      if (genre != genres[0]) return true;
+      if (genre != Cloud.genres[0]) return true;
     }
+
+    return false;
+  }
+
+  Future<bool> willPop() async {
+    if (searchString != null && searchString.isNotEmpty) {
+      FocusScope.of(context).unfocus();
+      setState(() {
+        searchString = '';
+        modifiedMyList = [];
+      });
+      return false;
+    }
+
+    if (Navigator.canPop(context)) Navigator.of(context).pop();
 
     return false;
   }
@@ -241,29 +251,32 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
 
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: PreferredSize(
-          preferredSize: Size(screenSize.width, appBarSize),
-          child: Listener(
-            onPointerUp: (_) => removeNotification(),
-            child: CustomAppBar(
-              scrollOffset: _scrollOffset,
-              appBarType: widget.type == HomeScreenType.none
-                  ? CustomAppBarType.home
-                  : CustomAppBarType.custom_home,
-              category: widget.category,
-              onGenreChange: changeGenre,
-              onSearchChange: onSearch,
-              showNotification: showNotification,
-              genre: genre,
-            ),
-          )),
-      body: Listener(
-        onPointerUp: (_) => removeNotification(),
-        child: CustomScrollView(
-            controller: _scrollController,
-            slivers: showGrid ? singleGrid : multiList),
+    return WillPopScope(
+      onWillPop: willPop,
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: PreferredSize(
+            preferredSize: Size(screenSize.width, appBarSize),
+            child: Listener(
+              onPointerUp: (_) => removeNotification(),
+              child: CustomAppBar(
+                scrollOffset: _scrollOffset,
+                appBarType: widget.type == HomeScreenType.none
+                    ? CustomAppBarType.home
+                    : CustomAppBarType.custom_home,
+                category: widget.category,
+                onGenreChange: changeGenre,
+                onSearchChange: onSearch,
+                showNotification: showNotification,
+                genre: genre,
+              ),
+            )),
+        body: Listener(
+          onPointerUp: (_) => removeNotification(),
+          child: CustomScrollView(
+              controller: _scrollController,
+              slivers: showGrid ? singleGrid : multiList),
+        ),
       ),
     );
   }

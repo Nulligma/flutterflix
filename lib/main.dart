@@ -1,9 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutterflix/appManager.dart';
 import 'package:flutterflix/screens/loginScreen.dart';
-import 'package:flutterflix/screens/navScren.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,7 +41,7 @@ class MyApp extends StatelessWidget {
               );
             } else if (!snapshot.hasData)
               return LoginScreen();
-            else if (snapshot.hasData) return NavScreen();
+            else if (snapshot.hasData) return AppManager();
 
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,

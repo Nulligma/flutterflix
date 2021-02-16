@@ -1,43 +1,69 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutterflix/admin/adminPanel.dart';
 import 'package:flutterflix/assets.dart';
+import 'package:flutterflix/database/firestoreFields.dart';
+import 'package:flutterflix/helpers/uiHelpers.dart';
 
 class ProfileScreen extends StatefulWidget {
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
 }
 
-enum SettingsFormType { login, register }
-
 class _ProfileScreenState extends State<ProfileScreen> {
-  SettingsFormType type;
+  String name;
+  String email;
+  bool admin;
+  bool isLoading;
 
   @override
   void initState() {
     super.initState();
-
-    type = SettingsFormType.login;
+    isLoading = true;
+    init();
   }
 
-  void changeForm(SettingsFormType newType) {
+  void init() async {
+    String userId = FirebaseAuth.instance.currentUser.uid;
+
+    DocumentReference userDocument = FirebaseFirestore.instance
+        .collection(FirestoreFields.USERS_COLLECTION)
+        .doc(userId);
+
+    DocumentSnapshot snapshot = await userDocument.get();
+
+    email = snapshot.get(FirestoreFields.USER_EMAIL);
+    name = snapshot.get(FirestoreFields.USER_NAME);
+    admin = snapshot.get(FirestoreFields.ADMIN);
+
     setState(() {
-      type = newType;
+      isLoading = false;
     });
   }
 
-  Widget get form {
-    switch (type) {
-      case SettingsFormType.login:
-        return _LoginForm(
-          onFormChange: changeForm,
-        );
-      case SettingsFormType.register:
-        return _RegisterForm(
-          onFormChange: changeForm,
-        );
-    }
-
-    return Container();
+  Widget get _form {
+    if (isLoading) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          SizedBox(
+            child: const CircularProgressIndicator(),
+            width: 60,
+            height: 60,
+          ),
+          const Padding(
+            padding: EdgeInsets.only(top: 16),
+            child: Text(
+              'Loading...',
+              style: TextStyle(color: Colors.white, fontSize: 26.0),
+            ),
+          )
+        ],
+      );
+    } else
+      return _UserDataForm(name: name, email: email, admin: admin);
   }
 
   @override
@@ -48,14 +74,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           image: DecorationImage(
               colorFilter: ColorFilter.mode(
                   Colors.black.withOpacity(0.5), BlendMode.darken),
-              image: AssetImage(Assets.login_background),
+              image: NetworkImage(Assets.profile_background),
               fit: BoxFit.cover)),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          title: Image.asset(
+          title: Image.network(
             Assets.netflixLogo1,
             fit: BoxFit.contain,
             height: 50,
@@ -69,7 +95,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Padding(
                 padding:
                     const EdgeInsets.symmetric(vertical: 20, horizontal: 50),
-                child: form),
+                child: _form),
           ),
         ),
       ),
@@ -77,23 +103,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 }
 
-class _LoginForm extends StatelessWidget {
-  final Function onFormChange;
+class _UserDataForm extends StatelessWidget {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final String name;
+  final String email;
+  final bool admin;
 
-  _LoginForm({Key key, @required this.onFormChange}) : super(key: key);
+  _UserDataForm({Key key, this.name, this.email, this.admin}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    String email;
-    String password;
-
     return Form(
       key: _formKey,
       child: Column(
         children: [
           Text(
-            "Sign In",
+            "Profile",
             style: const TextStyle(
               color: Colors.white,
               fontSize: 35.0,
@@ -104,144 +129,7 @@ class _LoginForm extends StatelessWidget {
             height: 20,
           ),
           TextFormField(
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16.0,
-            ),
-            decoration: InputDecoration(
-              fillColor: Colors.white30,
-              filled: true,
-              hintText: 'Enter your email',
-              hintStyle: const TextStyle(
-                color: Colors.white54,
-                fontSize: 16.0,
-              ),
-            ),
-            validator: (String value) {
-              if (value.isEmpty) {
-                return 'Email is Required';
-              }
-
-              if (!RegExp(
-                      r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
-                  .hasMatch(value)) {
-                return 'Please enter a valid email Address';
-              }
-
-              return null;
-            },
-            onSaved: (String value) {
-              email = value;
-            },
-            autofocus: false,
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          TextFormField(
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16.0,
-            ),
-            decoration: InputDecoration(
-              fillColor: Colors.white30,
-              filled: true,
-              hintText: 'Enter your password',
-              hintStyle: const TextStyle(
-                color: Colors.white54,
-                fontSize: 16.0,
-              ),
-            ),
-            autofocus: false,
-            validator: (String value) {
-              if (value.isEmpty) {
-                return 'Password is Required';
-              }
-
-              return null;
-            },
-            onSaved: (String value) {
-              password = value;
-            },
-          ),
-          SizedBox(
-            height: 40,
-          ),
-          Container(
-            width: double.infinity,
-            height: 50.0,
-            child: FlatButton(
-              color: Colors.red[800],
-              child: Text(
-                "Sign in",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20.0,
-                ),
-              ),
-              onPressed: () {
-                if (!_formKey.currentState.validate()) {
-                  return;
-                }
-
-                _formKey.currentState.save();
-
-                print(email);
-                print(password);
-              },
-            ),
-          ),
-          Spacer(),
-          Container(
-            width: double.infinity,
-            height: 50.0,
-            child: FlatButton(
-              color: Colors.grey[800],
-              child: Text(
-                "Register",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20.0,
-                ),
-              ),
-              onPressed: () => onFormChange(SettingsFormType.register),
-            ),
-          )
-        ],
-      ),
-    );
-  }
-}
-
-class _RegisterForm extends StatelessWidget {
-  final Function onFormChange;
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  _RegisterForm({Key key, @required this.onFormChange}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    String name;
-    int age;
-    String email;
-    String password;
-
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: [
-          Text(
-            "Register",
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 35.0,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          TextFormField(
+            initialValue: name,
             style: const TextStyle(
               color: Colors.white,
               fontSize: 16.0,
@@ -259,11 +147,7 @@ class _RegisterForm extends StatelessWidget {
               if (value.isEmpty) {
                 return 'Name is Required';
               }
-
               return null;
-            },
-            onSaved: (String value) {
-              name = value;
             },
             autofocus: false,
           ),
@@ -271,10 +155,7 @@ class _RegisterForm extends StatelessWidget {
             height: 20,
           ),
           TextFormField(
-            keyboardType: TextInputType.number,
-            inputFormatters: <TextInputFormatter>[
-              FilteringTextInputFormatter.digitsOnly
-            ],
+            initialValue: email,
             style: const TextStyle(
               color: Colors.white,
               fontSize: 16.0,
@@ -282,38 +163,7 @@ class _RegisterForm extends StatelessWidget {
             decoration: InputDecoration(
               fillColor: Colors.white30,
               filled: true,
-              hintText: 'Enter your age',
-              hintStyle: const TextStyle(
-                color: Colors.white54,
-                fontSize: 16.0,
-              ),
-            ),
-            validator: (String value) {
-              int ageInput = int.tryParse(value);
-
-              if (ageInput == null || ageInput <= 0) {
-                return 'Correct age is Required';
-              }
-
-              return null;
-            },
-            onSaved: (String value) {
-              age = int.tryParse(value);
-            },
-            autofocus: false,
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          TextFormField(
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16.0,
-            ),
-            decoration: InputDecoration(
-              fillColor: Colors.white30,
-              filled: true,
-              hintText: 'Enter your email',
+              hintText: 'Enter your name',
               hintStyle: const TextStyle(
                 color: Colors.white54,
                 fontSize: 16.0,
@@ -332,84 +182,50 @@ class _RegisterForm extends StatelessWidget {
 
               return null;
             },
-            onSaved: (String value) {
-              email = value;
-            },
             autofocus: false,
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          TextFormField(
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16.0,
-            ),
-            decoration: InputDecoration(
-              fillColor: Colors.white30,
-              filled: true,
-              hintText: 'Enter your password',
-              hintStyle: const TextStyle(
-                color: Colors.white54,
-                fontSize: 16.0,
-              ),
-            ),
-            autofocus: false,
-            validator: (String value) {
-              if (value.isEmpty) {
-                return 'Password is Required';
-              }
-
-              return null;
-            },
-            onSaved: (String value) {
-              password = value;
-            },
           ),
           SizedBox(
             height: 40,
           ),
-          Container(
-            width: double.infinity,
-            height: 50.0,
-            child: FlatButton(
-              color: Colors.red[800],
-              child: Text(
-                "Register",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20.0,
-                ),
-              ),
-              onPressed: () {
-                if (!_formKey.currentState.validate()) {
-                  return;
-                }
-
-                _formKey.currentState.save();
-
-                print(email);
-                print(password);
-                print(name);
-                print(age);
-              },
-            ),
-          ),
+          if (admin)
+            Container(
+              width: double.infinity,
+              height: 50.0,
+              child: FlatButton(
+                  color: Colors.red[800],
+                  child: Text(
+                    "Admin Panel",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20.0,
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).push(createRoute(
+                        AdminPanel(), Offset(1.0, 0.0), Offset.zero));
+                  }),
+            )
+          else
+            Container(),
           Spacer(),
           Container(
             width: double.infinity,
             height: 50.0,
             child: FlatButton(
-              color: Colors.grey[800],
-              child: Text(
-                "Login",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20.0,
+                color: Colors.grey[800],
+                child: Text(
+                  "Sign Out",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20.0,
+                  ),
                 ),
-              ),
-              onPressed: () => onFormChange(SettingsFormType.login),
-            ),
+                onPressed: () {
+                  FirebaseAuth.instance.signOut().then((_) {
+                    if (Navigator.of(context).canPop())
+                      Navigator.of(context).pop();
+                  });
+                }),
           )
         ],
       ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutterflix/data/data.dart';
+import 'package:flutterflix/database/clouddata.dart';
 import 'package:flutterflix/helpers/uiHelpers.dart';
 import 'package:flutterflix/models/contentModel.dart';
 import 'package:flutterflix/screens/contentDetailScreen.dart';
@@ -79,7 +79,7 @@ class _ContentHeaderState extends State<ContentHeader> {
           child: widget.type == ContentHeaderType.Previews
               ? widget.videoPlayer
               : Image(
-                  image: AssetImage(widget.content.imageUrl),
+                  image: NetworkImage(widget.content.imageUrl),
                   fit: BoxFit.cover,
                   height: double.infinity,
                   width: double.infinity,
@@ -101,32 +101,38 @@ class _ContentHeaderState extends State<ContentHeader> {
               width: 250.0,
               child: widget.type == ContentHeaderType.Details
                   ? contentRatings
-                  : Image.asset(widget.content.titleImageUrl)),
+                  : Image.network(widget.content.titleImageUrl)),
         ),
         Positioned(
             left: 0,
             right: 0,
             bottom: 40.0,
             child: widget.type == ContentHeaderType.Details
-                ? _PlayButton()
+                ? _PlayButton(
+                    videoUrl: widget.content.videoUrl,
+                    contentName: widget.content.name,
+                  )
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       VerticalIconButton(
-                        icon: myList.contains(widget.content)
+                        icon: Cloud.myList.contains(widget.content)
                             ? Icons.check
                             : Icons.add,
                         title: 'List',
                         onTap: () {
-                          if (myList.contains(widget.content))
-                            myList.remove(widget.content);
+                          if (Cloud.myList.contains(widget.content))
+                            Cloud.updateMyList(widget.content, false);
                           else
-                            myList.add(widget.content);
+                            Cloud.updateMyList(widget.content, true);
 
                           setState(() {});
                         },
                       ),
-                      _PlayButton(),
+                      _PlayButton(
+                        videoUrl: widget.content.videoUrl,
+                        contentName: widget.content.name,
+                      ),
                       VerticalIconButton(
                         icon: Icons.info_outline,
                         title: 'Info',
@@ -153,7 +159,7 @@ class _ContentHeaderState extends State<ContentHeader> {
           child: widget.type == ContentHeaderType.Previews
               ? widget.videoPlayer
               : Image(
-                  image: AssetImage(widget.content.imageUrlLandscape),
+                  image: NetworkImage(widget.content.imageUrlLandscape),
                   fit: BoxFit.cover,
                   height: double.infinity,
                   width: double.infinity,
@@ -188,7 +194,7 @@ class _ContentHeaderState extends State<ContentHeader> {
                   ? Container()
                   : SizedBox(
                       width: 250.0,
-                      child: Image.asset(widget.content.titleImageUrl),
+                      child: Image.network(widget.content.titleImageUrl),
                     ),
               const SizedBox(height: 15.0),
               Container(
@@ -232,7 +238,10 @@ class _ContentHeaderState extends State<ContentHeader> {
               const SizedBox(height: 50.0),
               Row(
                 children: [
-                  _PlayButton(),
+                  _PlayButton(
+                    videoUrl: widget.content.videoUrl,
+                    contentName: widget.content.name,
+                  ),
                   const SizedBox(width: 16.0),
                   widget.type == ContentHeaderType.Details
                       ? Container()
@@ -279,11 +288,31 @@ class _ContentHeaderState extends State<ContentHeader> {
 }
 
 class _PlayButton extends StatelessWidget {
+  final String videoUrl;
+  final String contentName;
+
+  const _PlayButton(
+      {Key key, @required this.videoUrl, @required this.contentName})
+      : super(key: key);
   @override
   Widget build(BuildContext context) {
     return FlatButton.icon(
         padding: const EdgeInsets.fromLTRB(25.0, 10.0, 30.0, 10.0),
-        onPressed: () => print('Play'),
+        onPressed: () {
+          Navigator.push(
+              context,
+              createRoute(
+                  Scaffold(
+                    appBar: AppBar(
+                      title: Text(contentName),
+                    ),
+                    backgroundColor: Colors.black,
+                    body: CustomVideoPlayer(
+                        type: PlayerType.content, videoUrl: videoUrl),
+                  ),
+                  Offset(0.0, 1.0),
+                  Offset.zero));
+        },
         color: Colors.white,
         icon: const Icon(Icons.play_arrow, size: 30.0),
         label: const Text(

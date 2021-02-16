@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutterflix/data/data.dart';
+import 'package:flutterflix/database/clouddata.dart';
 import 'package:flutterflix/models/contentModel.dart';
 import 'package:flutterflix/widgets/customVideoPlayer.dart';
 import 'package:flutterflix/widgets/widgets.dart';
@@ -33,7 +33,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
   }
 
   void videoEnded() {
-    if (_index + 1 == previews.length)
+    if (_index + 1 == Cloud.previews.length)
       Navigator.of(context).pop();
     else
       _pageController.jumpToPage(_index + 1);
@@ -44,16 +44,17 @@ class _PreviewScreenState extends State<PreviewScreen> {
     return Scaffold(
         body: Stack(children: [
       PageView.builder(
-        itemCount: previews.length,
+        itemCount: Cloud.previews.length,
         controller: _pageController,
         onPageChanged: onPageChanged,
         itemBuilder: (_, i) {
-          Content previewContent = previews[i];
+          Content previewContent = Cloud.previews[i];
 
           return ContentHeader(
             content: previewContent,
             type: ContentHeaderType.Previews,
             videoPlayer: CustomVideoPlayer(
+              type: PlayerType.preview,
               videoUrl: previewContent.previewVideo,
               onVideoEnded: videoEnded,
             ),

@@ -1,17 +1,18 @@
 class Assets {
-  static const String _images = 'assets/images/';
-  static const String _background = 'assets/background/';
-  static const String _trailers = 'assets/images/trailers/';
-  static const String _atla_episodes = 'assets/images/atla_episodes/';
-  static const String _blackMirror_episodes =
-      'assets/images/blackMirror_episodes/';
-  static const String _breakingBad_episodes =
-      'assets/images/breakingBad_episodes/';
-  static const String _cobraKai_episodes = 'assets/images/cobraKai_episodes/';
-  static const String _queen_episodes = 'assets/images/queen_episodes/';
-  static const String _umbrella_episodes = 'assets/images/umbrella_episodes/';
-  static const String _tiger_episodes = 'assets/images/tiger_episodes/';
-  static const String _witcher_episodes = 'assets/images/witcher_episodes/';
+  static const String _images =
+      'http://nulligma.com/projects/flutterflix/images/';
+  static const String _background =
+      'http://nulligma.com/projects/flutterflix/background/';
+  static const String _trailers = '${_images}trailers/';
+
+  static const String _atla_episodes = '${_images}atla_episodes/';
+  static const String _blackMirror_episodes = '${_images}blackMirror_episodes/';
+  static const String _breakingBad_episodes = '${_images}breakingBad_episodes/';
+  static const String _cobraKai_episodes = '${_images}cobraKai_episodes/';
+  static const String _queen_episodes = '${_images}queen_episodes/';
+  static const String _umbrella_episodes = '${_images}umbrella_episodes/';
+  static const String _tiger_episodes = '${_images}tiger_episodes/';
+  static const String _witcher_episodes = '${_images}witcher_episodes/';
 
   static const String login_background = "${_background}loginBackground.jpg";
   static const String profile_background =
@@ -37,9 +38,9 @@ class Assets {
   static const String cobraKai_ep2 = '${_cobraKai_episodes}ep2.jpg';
   static const String cobraKai_ep3 = '${_cobraKai_episodes}ep3.jpg';
 
-  static const String cobraKai_trailer1 = '${_trailers}cobraKai1.jpg';
-  static const String cobraKai_trailer2 = '${_trailers}cobraKai2.jpg';
-  static const String cobraKai_trailer3 = '${_trailers}cobraKai3.jpg';
+  static const String cobraKai_trailer1 = '${_trailers}cobrakai1.jpg';
+  static const String cobraKai_trailer2 = '${_trailers}cobrakai2.jpg';
+  static const String cobraKai_trailer3 = '${_trailers}cobrakai3.jpg';
 
   static const String queen_ep1 = '${_queen_episodes}ep1.jpg';
   static const String queen_ep2 = '${_queen_episodes}ep2.jpg';

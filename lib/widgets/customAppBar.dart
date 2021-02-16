@@ -1,9 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterflix/assets.dart';
+import 'package:flutterflix/database/clouddata.dart';
 import 'package:flutterflix/helpers/uiHelpers.dart';
 import 'package:flutterflix/screens/homeScreen.dart';
-import 'package:flutterflix/data/data.dart';
+import 'package:flutterflix/screens/profileScreen.dart';
 import 'package:flutterflix/widgets/responsive.dart';
 
 enum CustomAppBarType { home, custom_home }
@@ -156,7 +157,7 @@ class _CategoryAppBarMobile extends StatelessWidget {
                         onChanged: (String newValue) {
                           onGenreChange(newValue);
                         },
-                        items: genres.map((value) {
+                        items: Cloud.genres.map((value) {
                           return DropdownMenuItem<String>(
                             value: value,
                             child: Text(value),
@@ -178,7 +179,7 @@ class _CustomAppBarMobile extends StatelessWidget {
     return SafeArea(
       child: Row(
         children: [
-          Image.asset(Assets.netflixLogo0),
+          Image.network(Assets.netflixLogo0),
           const SizedBox(width: 12.0),
           Expanded(
             child: _NavigationButtons(),
@@ -255,7 +256,7 @@ class _CustomAppBarDesktop extends StatelessWidget {
             onChanged: (String newValue) {
               onGenreChange(newValue);
             },
-            items: genres.map((value) {
+            items: Cloud.genres.map((value) {
               return DropdownMenuItem<String>(
                 value: value,
                 child: Text(value),
@@ -271,7 +272,7 @@ class _CustomAppBarDesktop extends StatelessWidget {
       child: Row(
         children: [
           InkWell(
-              child: Image.asset(Assets.netflixLogo1),
+              child: Image.network(Assets.netflixLogo1),
               onTap: () {
                 if (category != null) Navigator.of(context).pop();
               }),
@@ -319,7 +320,8 @@ class _CustomAppBarDesktop extends StatelessWidget {
                   icon: Icon(Icons.account_circle),
                   iconSize: 28.0,
                   color: Colors.white,
-                  onPressed: () => print('profile'),
+                  onPressed: () => Navigator.of(context).push(createRoute(
+                      ProfileScreen(), Offset(1.0, 0.0), Offset.zero)),
                 ),
               ],
             ),

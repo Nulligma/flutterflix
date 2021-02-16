@@ -1,7 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutterflix/assets.dart';
+import 'package:flutterflix/database/firestoreFields.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -87,14 +89,14 @@ class _LoginScreenState extends State<LoginScreen> {
           image: DecorationImage(
               colorFilter: ColorFilter.mode(
                   Colors.black.withOpacity(0.5), BlendMode.darken),
-              image: AssetImage(Assets.login_background),
+              image: NetworkImage(Assets.login_background),
               fit: BoxFit.cover)),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          title: Image.asset(
+          title: Image.network(
             Assets.netflixLogo1,
             fit: BoxFit.contain,
             height: 50,
@@ -441,6 +443,18 @@ class _RegisterForm extends StatelessWidget {
                     showLoading(true);
                     await FirebaseAuth.instance.createUserWithEmailAndPassword(
                         email: email, password: password);
+
+                    DocumentReference userDocument = FirebaseFirestore.instance
+                        .collection(FirestoreFields.USERS_COLLECTION)
+                        .doc(FirebaseAuth.instance.currentUser.uid);
+
+                    userDocument.set({
+                      FirestoreFields.USER_NAME: name,
+                      FirestoreFields.USER_AGE: age,
+                      FirestoreFields.USER_EMAIL: email,
+                      FirestoreFields.ADMIN: false,
+                      FirestoreFields.USER_LIST: []
+                    });
 
                     showLoading(false);
                   } on FirebaseAuthException catch (e) {
