@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterflix/models/contentModel.dart';
 import 'package:flutterflix/screens/contentDetailScreen.dart';
@@ -5,10 +6,10 @@ import 'package:flutterflix/helpers/uiHelpers.dart';
 import 'package:flutterflix/widgets/responsive.dart';
 
 class ContentGrid extends StatelessWidget {
-  final List<Content> contents;
+  final List<Content>? contents;
   final bool scrollLock;
 
-  const ContentGrid({Key key, @required this.contents, this.scrollLock = false})
+  const ContentGrid({Key? key, required this.contents, this.scrollLock = false})
       : super(key: key);
 
   int gridCrossAxisCount(BuildContext context) {
@@ -36,9 +37,9 @@ class ContentGrid extends StatelessWidget {
             mainAxisSpacing: 10.0,
             childAspectRatio: 0.65,
           ),
-          itemCount: contents.length,
+          itemCount: contents!.length,
           itemBuilder: (BuildContext context, int index) {
-            Content content = contents[index];
+            Content content = contents![index];
             return InkWell(
               onTap: () {
                 Navigator.push(
@@ -46,11 +47,17 @@ class ContentGrid extends StatelessWidget {
                     createRoute(ContentDetails(content: content),
                         Offset(0.0, 1.0), Offset.zero));
               },
-              child: Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: NetworkImage(content.poster),
-                    fit: BoxFit.cover,
+              child: CachedNetworkImage(
+                placeholder: (context, url) =>
+                    Center(child: CircularProgressIndicator()),
+                errorWidget: (context, url, error) => Icon(Icons.error),
+                imageUrl: content.poster!,
+                imageBuilder: (context, imageProvider) => Container(
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: imageProvider,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
               ),

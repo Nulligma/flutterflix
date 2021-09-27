@@ -1,8 +1,8 @@
 class Assets {
   static const String _images =
-      'http://nulligma.com/projects/flutterflix/images/';
+      'https://ik.imagekit.io/nulligma/SuperFlix/images/';
   static const String _background =
-      'http://nulligma.com/projects/flutterflix/background/';
+      'https://ik.imagekit.io/nulligma/SuperFlix/background/';
   static const String _trailers = '${_images}trailers/';
 
   static const String _atla_episodes = '${_images}atla_episodes/';

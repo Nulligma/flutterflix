@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterflix/helpers/uiHelpers.dart';
 import 'package:flutterflix/models/contentModel.dart';
@@ -5,13 +6,13 @@ import 'package:flutterflix/screens/contentDetailScreen.dart';
 
 class ContentList extends StatelessWidget {
   final String title;
-  final List<Content> contentList;
+  final List<Content>? contentList;
   final bool isOriginals;
 
   const ContentList(
-      {Key key,
-      @required this.title,
-      @required this.contentList,
+      {Key? key,
+      required this.title,
+      required this.contentList,
       this.isOriginals = false})
       : super(key: key);
 
@@ -39,9 +40,9 @@ class ContentList extends StatelessWidget {
               horizontal: 16.0,
             ),
             scrollDirection: Axis.horizontal,
-            itemCount: contentList.length,
+            itemCount: contentList!.length,
             itemBuilder: (BuildContext context, int index) {
-              final Content content = contentList[index];
+              final Content content = contentList![index];
               return InkWell(
                   onTap: () {
                     Navigator.push(
@@ -49,14 +50,20 @@ class ContentList extends StatelessWidget {
                         createRoute(ContentDetails(content: content),
                             Offset(0.0, 1.0), Offset.zero));
                   },
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 8.0),
-                    height: isOriginals ? 400.0 : 200.0,
-                    width: isOriginals ? 200.0 : 130.0,
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: NetworkImage(content.poster),
-                        fit: BoxFit.cover,
+                  child: CachedNetworkImage(
+                    placeholder: (context, url) =>
+                        Center(child: CircularProgressIndicator()),
+                    errorWidget: (context, url, error) => Icon(Icons.error),
+                    imageUrl: content.poster!,
+                    imageBuilder: (context, imageProvider) => Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 8.0),
+                      height: isOriginals ? 400.0 : 200.0,
+                      width: isOriginals ? 200.0 : 130.0,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: imageProvider,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                   ));

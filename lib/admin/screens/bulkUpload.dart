@@ -8,13 +8,13 @@ import 'package:flutterflix/sampleData/localdata.dart';
 class BulkUpload extends StatefulWidget {
   final Function onEdit;
 
-  const BulkUpload({Key key, this.onEdit}) : super(key: key);
+  const BulkUpload({Key? key, required this.onEdit}) : super(key: key);
   @override
   _BulkUploadState createState() => _BulkUploadState();
 }
 
 class _BulkUploadState extends State<BulkUpload> {
-  bool uploadAll;
+  late bool uploadAll;
   @override
   void initState() {
     super.initState();
@@ -30,7 +30,7 @@ class _BulkUploadState extends State<BulkUpload> {
           color: Colors.red,
           child: uploadAll
               ? Container()
-              : FlatButton(
+              : TextButton(
                   child: Text(
                     "Upload All",
                     style: TextStyle(color: Colors.white),
@@ -38,26 +38,29 @@ class _BulkUploadState extends State<BulkUpload> {
                   onPressed: () {
                     showDialog(
                         context: context,
-                        child: AlertDialog(
-                          content:
-                              Text("Do you want to upload all the content?"),
-                          actions: [
-                            FlatButton(
-                              child: Text("Yes"),
-                              onPressed: () {
-                                uploadAll = true;
-                                Navigator.of(context).pop();
-                                setState(() {});
-                              },
-                            ),
-                            FlatButton(
-                              child: Text("No"),
-                              onPressed: () => Navigator.of(context).pop(),
-                            )
-                          ],
-                        ));
+                        builder: (_) {
+                          return AlertDialog(
+                            content:
+                                Text("Do you want to upload all the content?"),
+                            actions: [
+                              TextButton(
+                                child: Text("Yes"),
+                                onPressed: () {
+                                  uploadAll = true;
+                                  Navigator.of(context).pop();
+                                  setState(() {});
+                                },
+                              ),
+                              TextButton(
+                                child: Text("No"),
+                                onPressed: () => Navigator.of(context).pop(),
+                              )
+                            ],
+                          );
+                        });
                   },
-                  color: Colors.deepPurple,
+                  style:
+                      TextButton.styleFrom(backgroundColor: Colors.deepPurple),
                 ),
         ),
         SizedBox(
@@ -98,7 +101,11 @@ class _UploadItem extends StatefulWidget {
   final Function onEdit;
 
   const _UploadItem(
-      {Key key, this.content, this.index, this.autoUpload, this.onEdit})
+      {Key? key,
+      required this.content,
+      required this.index,
+      required this.autoUpload,
+      required this.onEdit})
       : super(key: key);
 
   @override
@@ -106,7 +113,7 @@ class _UploadItem extends StatefulWidget {
 }
 
 class __UploadItemState extends State<_UploadItem> {
-  UploadState state;
+  late UploadState state;
 
   @override
   void initState() {
@@ -164,34 +171,35 @@ class __UploadItemState extends State<_UploadItem> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              FlatButton(
+              TextButton(
                 child: Text(
                   "Upload",
                   style: TextStyle(color: Colors.white),
                 ),
                 onPressed: () {
                   showDialog(
-                      context: context,
-                      child: AlertDialog(
-                        content: Text("Do you want to upload this content?"),
-                        actions: [
-                          FlatButton(
-                            child: Text("Yes"),
-                            onPressed: () {
-                              upload();
-                              Navigator.of(context).pop();
-                            },
+                      builder: (context) => AlertDialog(
+                            content:
+                                Text("Do you want to upload this content?"),
+                            actions: [
+                              TextButton(
+                                child: Text("Yes"),
+                                onPressed: () {
+                                  upload();
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                              TextButton(
+                                child: Text("No"),
+                                onPressed: () => Navigator.of(context).pop(),
+                              )
+                            ],
                           ),
-                          FlatButton(
-                            child: Text("No"),
-                            onPressed: () => Navigator.of(context).pop(),
-                          )
-                        ],
-                      ));
+                      context: context);
                 },
-                color: Colors.deepPurple,
+                style: TextButton.styleFrom(backgroundColor: Colors.deepPurple),
               ),
-              FlatButton(
+              TextButton(
                 child: Text(
                   "Edit",
                   style: TextStyle(color: Colors.white),
@@ -199,7 +207,7 @@ class __UploadItemState extends State<_UploadItem> {
                 onPressed: () {
                   widget.onEdit(widget.content);
                 },
-                color: Colors.amber,
+                style: TextButton.styleFrom(backgroundColor: Colors.amber),
               ),
             ],
           ),
@@ -221,15 +229,14 @@ class __UploadItemState extends State<_UploadItem> {
           ),
         );
     }
-    return Container();
   }
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       tileColor: Colors.white,
-      leading: Text(widget.index.toString() + " : " + widget.content.id),
-      title: Text(widget.content.name),
+      leading: Text(widget.index.toString() + " : " + widget.content.id!),
+      title: Text(widget.content.name!),
       trailing: trailingWidget,
     );
   }

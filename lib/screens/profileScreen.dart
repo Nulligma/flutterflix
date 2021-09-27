@@ -12,10 +12,10 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String name;
-  String email;
-  bool admin;
-  bool isLoading;
+  String? name;
+  String? email;
+  bool? admin;
+  late bool isLoading;
 
   @override
   void initState() {
@@ -25,7 +25,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void init() async {
-    String userId = FirebaseAuth.instance.currentUser.uid;
+    String userId = FirebaseAuth.instance.currentUser!.uid;
 
     DocumentReference userDocument = FirebaseFirestore.instance
         .collection(FirestoreFields.USERS_COLLECTION)
@@ -77,6 +77,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               image: NetworkImage(Assets.profile_background),
               fit: BoxFit.cover)),
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
@@ -90,7 +91,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         body: Center(
           child: Container(
             color: Colors.black.withOpacity(0.75),
-            width: 500,
+            width: 400,
             height: 700,
             child: Padding(
                 padding:
@@ -105,11 +106,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
 class _UserDataForm extends StatelessWidget {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final String name;
-  final String email;
-  final bool admin;
+  final String? name;
+  final String? email;
+  final bool? admin;
 
-  _UserDataForm({Key key, this.name, this.email, this.admin}) : super(key: key);
+  _UserDataForm({Key? key, this.name, this.email, this.admin})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -143,8 +145,8 @@ class _UserDataForm extends StatelessWidget {
                 fontSize: 16.0,
               ),
             ),
-            validator: (String value) {
-              if (value.isEmpty) {
+            validator: (String? value) {
+              if (value!.isEmpty) {
                 return 'Name is Required';
               }
               return null;
@@ -169,8 +171,8 @@ class _UserDataForm extends StatelessWidget {
                 fontSize: 16.0,
               ),
             ),
-            validator: (String value) {
-              if (value.isEmpty) {
+            validator: (String? value) {
+              if (value!.isEmpty) {
                 return 'Email is Required';
               }
 
@@ -187,12 +189,12 @@ class _UserDataForm extends StatelessWidget {
           SizedBox(
             height: 40,
           ),
-          if (admin)
+          if (admin!)
             Container(
               width: double.infinity,
               height: 50.0,
-              child: FlatButton(
-                  color: Colors.red[800],
+              child: TextButton(
+                  style: TextButton.styleFrom(backgroundColor: Colors.red[800]),
                   child: Text(
                     "Admin Panel",
                     style: const TextStyle(
@@ -211,8 +213,8 @@ class _UserDataForm extends StatelessWidget {
           Container(
             width: double.infinity,
             height: 50.0,
-            child: FlatButton(
-                color: Colors.grey[800],
+            child: TextButton(
+                style: TextButton.styleFrom(backgroundColor: Colors.grey[800]),
                 child: Text(
                   "Sign Out",
                   style: const TextStyle(

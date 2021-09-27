@@ -10,8 +10,8 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  String heading;
-  List<Content> contents;
+  late String heading;
+  List<Content>? contents;
 
   @override
   void initState() {
@@ -28,7 +28,7 @@ class _SearchScreenState extends State<SearchScreen> {
         contents = Cloud.topSearches;
       } else {
         heading = "Movies & TV Shows";
-        contents = Cloud.allContent
+        contents = Cloud.allContent!
             .where((content) => searchFilter(content, newSearch))
             .toList();
       }
@@ -76,7 +76,7 @@ class _SearchScreenState extends State<SearchScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(20.0, 75.0, 0.0, 35.0),
+                padding: const EdgeInsets.fromLTRB(20.0, 100.0, 0.0, 35.0),
                 child: Text(
                   heading,
                   style: const TextStyle(

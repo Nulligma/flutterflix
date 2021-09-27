@@ -13,9 +13,9 @@ class LoginScreen extends StatefulWidget {
 enum FormType { login, register, error }
 
 class _LoginScreenState extends State<LoginScreen> {
-  FormType type;
-  String formMessage;
-  bool isLoading;
+  late FormType type;
+  String? formMessage;
+  late bool isLoading;
 
   @override
   void initState() {
@@ -25,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
     isLoading = false;
   }
 
-  void changeForm(FormType newType, {String message}) {
+  void changeForm(FormType newType, {String? message}) {
     formMessage = message;
     setState(() {
       type = newType;
@@ -77,8 +77,6 @@ class _LoginScreenState extends State<LoginScreen> {
           message: formMessage,
         );
     }
-
-    return Container();
   }
 
   @override
@@ -92,6 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
               image: NetworkImage(Assets.login_background),
               fit: BoxFit.cover)),
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
@@ -105,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
         body: Center(
           child: Container(
             color: Colors.black.withOpacity(0.75),
-            width: 500,
+            width: 400,
             height: 700,
             child: Padding(
                 padding:
@@ -123,13 +122,13 @@ class _LoginForm extends StatelessWidget {
   final Function showLoading;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  _LoginForm({Key key, @required this.onFormChange, @required this.showLoading})
+  _LoginForm({Key? key, required this.onFormChange, required this.showLoading})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    String email;
-    String password;
+    String? email;
+    String? password;
 
     return Form(
       key: _formKey,
@@ -160,8 +159,8 @@ class _LoginForm extends StatelessWidget {
                 fontSize: 16.0,
               ),
             ),
-            validator: (String value) {
-              if (value.isEmpty) {
+            validator: (String? value) {
+              if (value!.isEmpty) {
                 return 'Email is Required';
               }
 
@@ -173,7 +172,7 @@ class _LoginForm extends StatelessWidget {
 
               return null;
             },
-            onSaved: (String value) {
+            onSaved: (String? value) {
               email = value;
             },
             autofocus: false,
@@ -182,6 +181,7 @@ class _LoginForm extends StatelessWidget {
             height: 20,
           ),
           TextFormField(
+            obscureText: true,
             style: const TextStyle(
               color: Colors.white,
               fontSize: 16.0,
@@ -196,14 +196,14 @@ class _LoginForm extends StatelessWidget {
               ),
             ),
             autofocus: false,
-            validator: (String value) {
-              if (value.isEmpty) {
+            validator: (String? value) {
+              if (value!.isEmpty) {
                 return 'Password is Required';
               }
 
               return null;
             },
-            onSaved: (String value) {
+            onSaved: (String? value) {
               password = value;
             },
           ),
@@ -213,8 +213,8 @@ class _LoginForm extends StatelessWidget {
           Container(
             width: double.infinity,
             height: 50.0,
-            child: FlatButton(
-              color: Colors.red[800],
+            child: TextButton(
+              style: TextButton.styleFrom(backgroundColor: Colors.red[800]),
               child: Text(
                 "Sign in",
                 style: const TextStyle(
@@ -223,15 +223,13 @@ class _LoginForm extends StatelessWidget {
                 ),
               ),
               onPressed: () async {
-                if (_formKey.currentState.validate()) {
-                  _formKey.currentState.save();
+                if (_formKey.currentState!.validate()) {
+                  _formKey.currentState!.save();
 
                   try {
                     showLoading(true);
                     await FirebaseAuth.instance.signInWithEmailAndPassword(
-                        email: email, password: password);
-
-                    showLoading(false);
+                        email: email!, password: password!);
                   } on FirebaseAuthException catch (e) {
                     showLoading(false);
                     onFormChange(FormType.error, message: e.message);
@@ -244,8 +242,8 @@ class _LoginForm extends StatelessWidget {
           Container(
             width: double.infinity,
             height: 50.0,
-            child: FlatButton(
-              color: Colors.grey[800],
+            child: TextButton(
+              style: TextButton.styleFrom(backgroundColor: Colors.grey[800]),
               child: Text(
                 "Register",
                 style: const TextStyle(
@@ -268,15 +266,15 @@ class _RegisterForm extends StatelessWidget {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   _RegisterForm(
-      {Key key, @required this.onFormChange, @required this.showLoading})
+      {Key? key, required this.onFormChange, required this.showLoading})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    String name;
-    int age;
-    String email;
-    String password;
+    String? name;
+    int? age;
+    String? email;
+    String? password;
 
     return Form(
       key: _formKey,
@@ -307,14 +305,14 @@ class _RegisterForm extends StatelessWidget {
                 fontSize: 16.0,
               ),
             ),
-            validator: (String value) {
-              if (value.isEmpty) {
+            validator: (String? value) {
+              if (value!.isEmpty) {
                 return 'Name is Required';
               }
 
               return null;
             },
-            onSaved: (String value) {
+            onSaved: (String? value) {
               name = value;
             },
             autofocus: false,
@@ -340,8 +338,8 @@ class _RegisterForm extends StatelessWidget {
                 fontSize: 16.0,
               ),
             ),
-            validator: (String value) {
-              int ageInput = int.tryParse(value);
+            validator: (String? value) {
+              int? ageInput = int.tryParse(value!);
 
               if (ageInput == null || ageInput <= 0) {
                 return 'Correct age is Required';
@@ -349,8 +347,8 @@ class _RegisterForm extends StatelessWidget {
 
               return null;
             },
-            onSaved: (String value) {
-              age = int.tryParse(value);
+            onSaved: (String? value) {
+              age = int.tryParse(value!);
             },
             autofocus: false,
           ),
@@ -371,8 +369,8 @@ class _RegisterForm extends StatelessWidget {
                 fontSize: 16.0,
               ),
             ),
-            validator: (String value) {
-              if (value.isEmpty) {
+            validator: (String? value) {
+              if (value!.isEmpty) {
                 return 'Email is Required';
               }
 
@@ -384,7 +382,7 @@ class _RegisterForm extends StatelessWidget {
 
               return null;
             },
-            onSaved: (String value) {
+            onSaved: (String? value) {
               email = value;
             },
             autofocus: false,
@@ -407,8 +405,8 @@ class _RegisterForm extends StatelessWidget {
               ),
             ),
             autofocus: false,
-            validator: (String value) {
-              if (value.isEmpty) {
+            validator: (String? value) {
+              if (value!.isEmpty) {
                 return 'Password is Required';
               } else if (value.length < 6) {
                 return 'Password should be at least 6 characters';
@@ -416,7 +414,7 @@ class _RegisterForm extends StatelessWidget {
 
               return null;
             },
-            onSaved: (String value) {
+            onSaved: (String? value) {
               password = value;
             },
           ),
@@ -426,8 +424,8 @@ class _RegisterForm extends StatelessWidget {
           Container(
             width: double.infinity,
             height: 50.0,
-            child: FlatButton(
-              color: Colors.red[800],
+            child: TextButton(
+              style: TextButton.styleFrom(backgroundColor: Colors.red[800]),
               child: Text(
                 "Register",
                 style: const TextStyle(
@@ -436,17 +434,17 @@ class _RegisterForm extends StatelessWidget {
                 ),
               ),
               onPressed: () async {
-                if (_formKey.currentState.validate()) {
-                  _formKey.currentState.save();
+                if (_formKey.currentState!.validate()) {
+                  _formKey.currentState!.save();
 
                   try {
                     showLoading(true);
                     await FirebaseAuth.instance.createUserWithEmailAndPassword(
-                        email: email, password: password);
+                        email: email!, password: password!);
 
                     DocumentReference userDocument = FirebaseFirestore.instance
                         .collection(FirestoreFields.USERS_COLLECTION)
-                        .doc(FirebaseAuth.instance.currentUser.uid);
+                        .doc(FirebaseAuth.instance.currentUser!.uid);
 
                     userDocument.set({
                       FirestoreFields.USER_NAME: name,
@@ -469,8 +467,8 @@ class _RegisterForm extends StatelessWidget {
           Container(
             width: double.infinity,
             height: 50.0,
-            child: FlatButton(
-              color: Colors.grey[800],
+            child: TextButton(
+              style: TextButton.styleFrom(backgroundColor: Colors.grey[800]),
               child: Text(
                 "Login",
                 style: const TextStyle(
@@ -488,10 +486,10 @@ class _RegisterForm extends StatelessWidget {
 }
 
 class _ErrorForm extends StatelessWidget {
-  final String message;
-  final Function onFormChange;
+  final String? message;
+  final Function? onFormChange;
 
-  const _ErrorForm({Key key, this.message, this.onFormChange})
+  const _ErrorForm({Key? key, this.message, this.onFormChange})
       : super(key: key);
 
   @override
@@ -509,7 +507,7 @@ class _ErrorForm extends StatelessWidget {
         height: 20,
       ),
       Text(
-        message,
+        message!,
         style: const TextStyle(
           color: Colors.white,
           fontSize: 14.0,
@@ -519,8 +517,8 @@ class _ErrorForm extends StatelessWidget {
       Container(
         width: double.infinity,
         height: 50.0,
-        child: FlatButton(
-          color: Colors.grey[800],
+        child: TextButton(
+          style: TextButton.styleFrom(backgroundColor: Colors.grey[800]),
           child: Text(
             "Register",
             style: const TextStyle(
@@ -528,7 +526,7 @@ class _ErrorForm extends StatelessWidget {
               fontSize: 20.0,
             ),
           ),
-          onPressed: () => onFormChange(FormType.register),
+          onPressed: () => onFormChange!(FormType.register),
         ),
       ),
       SizedBox(
@@ -537,8 +535,8 @@ class _ErrorForm extends StatelessWidget {
       Container(
         width: double.infinity,
         height: 50.0,
-        child: FlatButton(
-          color: Colors.grey[800],
+        child: TextButton(
+          style: TextButton.styleFrom(backgroundColor: Colors.grey[800]),
           child: Text(
             "Login",
             style: const TextStyle(
@@ -546,7 +544,7 @@ class _ErrorForm extends StatelessWidget {
               fontSize: 20.0,
             ),
           ),
-          onPressed: () => onFormChange(FormType.login),
+          onPressed: () => onFormChange!(FormType.login),
         ),
       )
     ]);

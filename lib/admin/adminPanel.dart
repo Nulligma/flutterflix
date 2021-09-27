@@ -7,7 +7,6 @@ import 'package:flutterflix/admin/widgets/navBar.dart';
 import 'package:flutterflix/admin/widgets/secondaryForm.dart';
 import 'package:flutterflix/admin/widgets/simpleList.dart';
 import 'package:flutterflix/database/clouddata.dart';
-import 'package:flutterflix/helpers/logicHelpers.dart';
 import 'package:flutterflix/models/contentModel.dart';
 import 'package:flutterflix/models/notificationModel.dart';
 import 'package:flutterflix/screens/screens.dart';
@@ -29,8 +28,8 @@ class AdminPanel extends StatefulWidget {
 }
 
 class _AdminPanelState extends State<AdminPanel> {
-  AdminTab currentTab;
-  Content content;
+  late AdminTab currentTab;
+  late Content adminContent;
 
   @override
   void initState() {
@@ -48,19 +47,20 @@ class _AdminPanelState extends State<AdminPanel> {
   void openContentForm(Content contentData) {
     setState(() {
       currentTab = AdminTab.CONTENT_FORM;
-      content = contentData;
+      adminContent = contentData;
     });
   }
 
   void editNotification(NotificationData n, Map newVal) async {
-    Cloud.notificationList[Cloud.notificationList.indexOf(n)] =
-        NotificationData.fromMap(newVal);
+    Cloud.notificationList![Cloud.notificationList!.indexOf(n)] =
+        NotificationData.fromMap(newVal as Map<String, dynamic>);
     await Cloud.updateNotification();
     setState(() {});
   }
 
   void addNotification(Map newVal) async {
-    Cloud.notificationList.add(NotificationData.fromMap(newVal));
+    Cloud.notificationList!
+        .add(NotificationData.fromMap(newVal as Map<String, dynamic>));
     await Cloud.updateNotification();
     setState(() {});
   }
@@ -71,9 +71,11 @@ class _AdminPanelState extends State<AdminPanel> {
         Cloud.featureTv == c) {
       showDialog(
           context: context,
-          child: AlertDialog(
-            content: Text("Cannot delete a featured content"),
-          ));
+          builder: (BuildContext context) {
+            return AlertDialog(
+              content: Text("Cannot delete a featured content"),
+            );
+          });
 
       return;
     }
@@ -91,14 +93,14 @@ class _AdminPanelState extends State<AdminPanel> {
         );
       case AdminTab.MOVIES:
         return SimpleList(
-          contents: Cloud.allContent
+          contents: Cloud.allContent!
               .where((el) => el.category == ContentCategory.MOVIES)
               .toList(),
-          leadingTexts: Cloud.allContent
+          leadingTexts: Cloud.allContent!
               .expand((Content c) =>
                   [if (c.category == ContentCategory.MOVIES) c.id])
               .toList(),
-          titles: Cloud.allContent
+          titles: Cloud.allContent!
               .expand((Content c) =>
                   [if (c.category == ContentCategory.MOVIES) c.name])
               .toList(),
@@ -110,14 +112,14 @@ class _AdminPanelState extends State<AdminPanel> {
         );
       case AdminTab.TV:
         return SimpleList(
-            contents: Cloud.allContent
+            contents: Cloud.allContent!
                 .where((el) => el.category == ContentCategory.TV_SHOW)
                 .toList(),
-            leadingTexts: Cloud.allContent
+            leadingTexts: Cloud.allContent!
                 .expand((Content c) =>
                     [if (c.category == ContentCategory.TV_SHOW) c.id])
                 .toList(),
-            titles: Cloud.allContent
+            titles: Cloud.allContent!
                 .expand((Content c) =>
                     [if (c.category == ContentCategory.TV_SHOW) c.name])
                 .toList(),
@@ -137,7 +139,7 @@ class _AdminPanelState extends State<AdminPanel> {
         );
       case AdminTab.CONTENT_FORM:
         return ContentForm(
-          content: content,
+          content: adminContent,
           onCancel: () {
             changeTab(AdminTab.DASHBOARD);
           },
@@ -145,40 +147,43 @@ class _AdminPanelState extends State<AdminPanel> {
       case AdminTab.NOTIFICATION:
         return SimpleList(
           contents: Cloud.notificationList,
-          leadingTexts:
-              Cloud.notificationList.map((NotificationData n) => n.id).toList(),
-          titles: Cloud.notificationList
-              .map((NotificationData n) => n.contentId + "--" + n.title)
+          leadingTexts: Cloud.notificationList!
+              .map((NotificationData n) => n.id)
+              .toList(),
+          titles: Cloud.notificationList!
+              .map((NotificationData n) => n.contentId! + "--" + n.title!)
               .toList(),
           onEdit: (var n) {
             showDialog(
                 context: ctx,
-                child: SecondaryForm(
-                  onConfirm: (Map newVal) => editNotification(n, newVal),
-                  initValue: n,
-                  title: "Edit notification",
-                  type: SecondaryFormType.Custom,
-                ));
+                builder: (_) {
+                  return SecondaryForm(
+                    onConfirm: (Map newVal) => editNotification(n, newVal),
+                    initValue: n,
+                    title: "Edit notification",
+                    type: SecondaryFormType.Custom,
+                  );
+                });
           },
           onAdd: () {
             showDialog(
                 context: ctx,
-                child: SecondaryForm(
-                  onConfirm: addNotification,
-                  initValue: NotificationData(null, null, null),
-                  title: "Add new notification",
-                  type: SecondaryFormType.Custom,
-                ));
+                builder: (_) {
+                  return SecondaryForm(
+                    onConfirm: addNotification,
+                    initValue: NotificationData(null, null, null),
+                    title: "Add new notification",
+                    type: SecondaryFormType.Custom,
+                  );
+                });
           },
           onDelete: (var n) async {
-            Cloud.notificationList.remove(n);
+            Cloud.notificationList!.remove(n);
             await Cloud.updateNotification();
             setState(() {});
           },
         );
-        break;
     }
-    return Container();
   }
 
   Future<bool> willPop() async {
@@ -225,12 +230,12 @@ class _DesktopUI extends StatelessWidget {
   final Function deleteSearchContent;
 
   const _DesktopUI(
-      {Key key,
-      this.onTabChange,
-      this.tabWidget,
-      this.currentTab,
-      this.editSearchContent,
-      this.deleteSearchContent})
+      {Key? key,
+      required this.onTabChange,
+      required this.tabWidget,
+      required this.currentTab,
+      required this.editSearchContent,
+      required this.deleteSearchContent})
       : super(key: key);
 
   @override
@@ -266,7 +271,11 @@ class _MobileUI extends StatelessWidget {
   final Widget tabWidget;
   final AdminTab currentTab;
 
-  const _MobileUI({Key key, this.onTabChange, this.tabWidget, this.currentTab})
+  const _MobileUI(
+      {Key? key,
+      required this.onTabChange,
+      required this.tabWidget,
+      required this.currentTab})
       : super(key: key);
 
   @override
@@ -321,7 +330,8 @@ class SideMenuDesktop extends StatefulWidget {
   final AdminTab currentTab;
   final Function onTap;
 
-  const SideMenuDesktop({Key key, this.currentTab, this.onTap})
+  const SideMenuDesktop(
+      {Key? key, required this.currentTab, required this.onTap})
       : super(key: key);
 
   @override
@@ -357,7 +367,7 @@ class _SideMenuDesktopState extends State<SideMenuDesktop> {
                     width: 75,
                     color:
                         collapsedMenu ? Colors.deepPurple[400] : Colors.white,
-                    child: FlatButton(
+                    child: TextButton(
                       child: Icon(Icons.menu,
                           color: collapsedMenu ? Colors.white : Colors.black),
                       onPressed: changeMenu,
@@ -438,7 +448,8 @@ class _SideMenuMobile extends StatelessWidget {
   final AdminTab currentTab;
   final Function changeTab;
 
-  const _SideMenuMobile({Key key, this.currentTab, this.changeTab})
+  const _SideMenuMobile(
+      {Key? key, required this.currentTab, required this.changeTab})
       : super(key: key);
 
   @override
@@ -494,7 +505,7 @@ class _SideMenuItem extends StatelessWidget {
   final bool active;
   final String text;
   final IconData icon;
-  final Function onTap;
+  final VoidCallback onTap;
   final bool collapsed;
 
   Widget get expandedTiles {
@@ -519,7 +530,12 @@ class _SideMenuItem extends StatelessWidget {
   }
 
   const _SideMenuItem(
-      {Key key, this.active, this.text, this.icon, this.onTap, this.collapsed})
+      {Key? key,
+      required this.active,
+      required this.text,
+      required this.icon,
+      required this.onTap,
+      required this.collapsed})
       : super(key: key);
   @override
   Widget build(BuildContext context) {

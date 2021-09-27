@@ -3,52 +3,51 @@ import 'package:flutterflix/helpers/logicHelpers.dart';
 import 'package:flutterflix/models/episodeModel.dart';
 import 'package:flutterflix/models/trailerModel.dart';
 import 'package:flutterflix/screens/homeScreen.dart';
-import 'package:meta/meta.dart';
 
 class Content {
-  String id;
-  String name;
-  String imageUrl;
-  String imageUrlLandscape;
-  String poster;
-  String titleImageUrl;
-  String videoUrl;
-  String previewVideo;
-  String description;
-  Color color;
-  int percentMatch;
-  int year;
-  int rating;
-  int duration;
-  String category;
+  String? id;
+  String? name;
+  String? imageUrl;
+  String? imageUrlLandscape;
+  String? poster;
+  String? titleImageUrl;
+  String? videoUrl;
+  String? previewVideo;
+  String? description;
+  Color? color;
+  int? percentMatch;
+  int? year;
+  int? rating;
+  int? duration;
+  String? category;
 
-  List<String> genres;
-  List<String> cast;
-  List<Episode> episodes;
-  List<String> seasons;
-  List<Trailer> trailers;
+  List<String>? genres;
+  List<String>? cast;
+  List<Episode>? episodes;
+  List<String>? seasons;
+  List<Trailer>? trailers;
 
-  Map<String, dynamic> variableMap;
+  late Map<String, dynamic> variableMap;
 
   Content(
-      {@required this.id,
-      @required this.name,
-      @required this.imageUrl,
-      @required this.imageUrlLandscape,
-      @required this.poster,
-      @required this.titleImageUrl,
-      @required this.videoUrl,
-      @required this.previewVideo,
-      @required this.description,
-      @required this.color,
-      @required this.percentMatch,
-      @required this.year,
-      @required this.rating,
-      @required this.duration,
-      @required this.genres,
-      @required this.cast,
-      @required this.category,
-      @required this.trailers,
+      {required this.id,
+      required this.name,
+      required this.imageUrl,
+      required this.imageUrlLandscape,
+      required this.poster,
+      required this.titleImageUrl,
+      required this.videoUrl,
+      required this.previewVideo,
+      required this.description,
+      required this.color,
+      required this.percentMatch,
+      required this.year,
+      required this.rating,
+      required this.duration,
+      required this.genres,
+      required this.cast,
+      required this.category,
+      required this.trailers,
       this.episodes,
       this.seasons}) {
     variableMap = {

@@ -9,11 +9,11 @@ class NotificationBox extends StatelessWidget {
   static const double width = 300.0;
   static const double height = 200.0;
 
-  final List<NotificationData> notifications;
+  final List<NotificationData>? notifications;
   final Function hideNotification;
 
   const NotificationBox(
-      {Key key, @required this.notifications, @required this.hideNotification})
+      {Key? key, required this.notifications, required this.hideNotification})
       : super(key: key);
 
   Widget get body {
@@ -30,7 +30,7 @@ class NotificationBox extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: ListView.separated(
           padding: EdgeInsets.zero,
-          itemCount: notifications.length,
+          itemCount: notifications!.length,
           separatorBuilder: (context, index) {
             return Divider(
               thickness: 1.0,
@@ -38,15 +38,15 @@ class NotificationBox extends StatelessWidget {
             );
           },
           itemBuilder: (BuildContext context, int index) {
-            Content content = Cloud.allContent.firstWhere((Content content) =>
-                content.id == notifications[index].contentId);
+            Content content = Cloud.allContent!.firstWhere((Content content) =>
+                content.id == notifications![index].contentId);
             return ListTile(
               contentPadding: EdgeInsets.symmetric(vertical: 5.0),
               hoverColor: Colors.white.withOpacity(0.5),
               leading:
-                  CircleAvatar(backgroundImage: NetworkImage(content.poster)),
+                  CircleAvatar(backgroundImage: NetworkImage(content.poster!)),
               title: Text(
-                notifications[index].title,
+                notifications![index].title!,
                 style: TextStyle(color: Colors.white),
               ),
               onTap: () {
@@ -110,7 +110,11 @@ class _OpenPainter extends CustomPainter {
   bool shouldRepaint(CustomPainter oldDelegate) => false;
 
   void _drawThreeShape(Canvas canvas,
-      {Offset first, Offset second, Offset third, Size size, paint}) {
+      {required Offset first,
+      required Offset second,
+      required Offset third,
+      Size? size,
+      required paint}) {
     var path1 = Path()
       ..moveTo(first.dx, first.dy)
       ..lineTo(second.dx, second.dy)

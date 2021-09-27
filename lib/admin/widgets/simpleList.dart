@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 
 class SimpleList extends StatefulWidget {
-  final List contents;
-  final List<String> leadingTexts;
-  final List<String> titles;
+  final List? contents;
+  final List<String?> leadingTexts;
+  final List<String?> titles;
   final Function onEdit;
-  final Function onAdd;
+  final VoidCallback? onAdd;
   final Function onDelete;
 
   const SimpleList(
-      {Key key,
-      this.contents,
-      this.leadingTexts,
-      this.titles,
-      this.onEdit,
+      {Key? key,
+      required this.contents,
+      required this.leadingTexts,
+      required this.titles,
+      required this.onEdit,
       this.onAdd,
-      this.onDelete})
+      required this.onDelete})
       : super(key: key);
 
   @override
@@ -27,7 +27,7 @@ class _SimpleListState extends State<SimpleList> {
   void didUpdateWidget(SimpleList oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (widget.contents.length != oldWidget.contents.length) setState(() {});
+    if (widget.contents!.length != oldWidget.contents!.length) setState(() {});
   }
 
   @override
@@ -38,14 +38,14 @@ class _SimpleListState extends State<SimpleList> {
             ? Container()
             : Container(
                 width: 200,
-                color: Colors.red,
-                child: FlatButton(
+                child: TextButton(
+                  style:
+                      TextButton.styleFrom(backgroundColor: Colors.deepPurple),
                   child: Text(
                     "Add new content",
                     style: TextStyle(color: Colors.white),
                   ),
                   onPressed: widget.onAdd,
-                  color: Colors.deepPurple,
                 ),
               ),
         SizedBox(
@@ -53,7 +53,7 @@ class _SimpleListState extends State<SimpleList> {
         ),
         Expanded(
           child: ListView.separated(
-            itemCount: widget.contents.length,
+            itemCount: widget.contents!.length,
             separatorBuilder: (BuildContext context, int index) {
               return SizedBox(
                 height: 10,
@@ -61,47 +61,51 @@ class _SimpleListState extends State<SimpleList> {
             },
             itemBuilder: (ctx, index) => ListTile(
               tileColor: Colors.white,
-              leading: Text(widget.leadingTexts[index]),
-              title: Text(widget.titles[index]),
+              leading: Text(widget.leadingTexts[index]!),
+              title: Text(widget.titles[index]!),
               trailing: Container(
                 width: 200,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    FlatButton(
+                    TextButton(
+                      style: TextButton.styleFrom(
+                          primary: Colors.black, backgroundColor: Colors.amber),
                       child: Text("Edit"),
                       onPressed: () {
-                        widget.onEdit(widget.contents[index]);
+                        widget.onEdit(widget.contents![index]);
                       },
-                      color: Colors.amber,
                     ),
-                    FlatButton(
+                    TextButton(
+                      style: TextButton.styleFrom(backgroundColor: Colors.red),
                       child: Text(
                         "Delete",
                         style: TextStyle(color: Colors.white),
                       ),
                       onPressed: () {
                         showDialog(
-                            context: context,
-                            child: AlertDialog(
+                          builder: (_) {
+                            return AlertDialog(
                               content:
                                   Text("Do you want to delete this content? "),
                               actions: [
-                                FlatButton(
+                                TextButton(
                                   child: Text("Yes"),
                                   onPressed: () {
                                     Navigator.of(context).pop();
-                                    widget.onDelete(widget.contents[index]);
+                                    widget.onDelete(widget.contents![index]);
                                   },
                                 ),
-                                FlatButton(
+                                TextButton(
                                   child: Text("No"),
                                   onPressed: () => Navigator.of(context).pop(),
                                 )
                               ],
-                            ));
+                            );
+                          },
+                          context: context,
+                        );
                       },
-                      color: Colors.red,
                     ),
                   ],
                 ),

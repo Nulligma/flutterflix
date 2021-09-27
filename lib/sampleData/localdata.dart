@@ -63,7 +63,7 @@ final List<Content> previews = [
   oblivion,
   mosul,
   dangal,
-  sintelContent
+  sintel
 ];
 
 final List<Content> myList = [
@@ -93,13 +93,12 @@ final List<Content> topSearches = [
 
 final List<Content> originals = [
   ava,
-  queenGambit,
-  blackMirror,
   tigerKing,
   witcher,
   lotr,
   breakingBad,
-  mosul
+  matrix,
+  sintel
 ];
 
 final List<Content> trending = [
@@ -119,7 +118,7 @@ final List<Content> trending = [
   oblivion,
   mosul,
   dangal,
-  sintelContent
+  sintel
 ];
 
 final List<Content> allContent = [
@@ -139,10 +138,10 @@ final List<Content> allContent = [
   oblivion,
   mosul,
   dangal,
-  sintelContent
+  sintel
 ];
 
-final Content sintelContent = Content(
+final Content sintel = Content(
   id: "Mov_01",
   name: 'Sintel',
   color: Colors.red,
@@ -205,7 +204,11 @@ final Content blackMirror = Content(
     blackMirrorEpisode2,
     blackMirrorEpisode1,
     blackMirrorEpisode2,
-    blackMirrorEpisode3
+    blackMirrorEpisode3,
+    blackMirrorEpisode3,
+    blackMirrorEpisode3,
+    blackMirrorEpisode3,
+    blackMirrorEpisode3,
   ],
   seasons: ["Season 1", "Season 2"],
   trailers: [blackMirrorTrailer1, blackMirrorTrailer3],
@@ -287,7 +290,12 @@ final Content breakingBad = Content(
     breakingBadEpisode2,
     breakingBadEpisode1,
     breakingBadEpisode2,
-    breakingBadEpisode3
+    breakingBadEpisode3,
+    breakingBadEpisode3,
+    breakingBadEpisode3,
+    breakingBadEpisode3,
+    breakingBadEpisode3,
+    breakingBadEpisode3,
   ],
   seasons: ["Season 1", "Season 2"],
   trailers: [breakingBadTrailer1, breakingBadTrailer2, breakingBadTrailer3],
@@ -327,7 +335,11 @@ final Content cobraKai = Content(
     cobraKaiEpisode2,
     cobraKaiEpisode1,
     cobraKaiEpisode2,
-    cobraKaiEpisode3
+    cobraKaiEpisode3,
+    cobraKaiEpisode3,
+    cobraKaiEpisode3,
+    cobraKaiEpisode3,
+    cobraKaiEpisode3,
   ],
   seasons: ["Season 1", "Season 2"],
   trailers: [cobraKaiTrailer1, cobraKaiTrailer2, cobraKaiTrailer3],
@@ -373,7 +385,12 @@ final Content queenGambit = Content(
     queenEpisode2,
     queenEpisode1,
     queenEpisode2,
-    queenEpisode3
+    queenEpisode3,
+    queenEpisode3,
+    queenEpisode3,
+    queenEpisode3,
+    queenEpisode3,
+    queenEpisode3,
   ],
   seasons: ["Season 1", "Season 2"],
   trailers: [queenTrailer1, queenTrailer2, queenTrailer3, queenTrailer4],
@@ -419,7 +436,11 @@ final Content umbrellaAcademy = Content(
     umbrellaEpisode2,
     umbrellaEpisode1,
     umbrellaEpisode2,
-    umbrellaEpisode3
+    umbrellaEpisode3,
+    umbrellaEpisode3,
+    umbrellaEpisode3,
+    umbrellaEpisode3,
+    umbrellaEpisode3,
   ],
   seasons: ["Season 1", "Season 2"],
   trailers: [umbrellaTrailer1, umbrellaTrailer2, umbrellaTrailer3],
@@ -467,7 +488,11 @@ final Content tigerKing = Content(
     tigerEpisode2,
     tigerEpisode1,
     tigerEpisode2,
-    tigerEpisode3
+    tigerEpisode3,
+    tigerEpisode3,
+    tigerEpisode3,
+    tigerEpisode3,
+    tigerEpisode3,
   ],
   seasons: ["Season 1", "Season 2"],
   trailers: [tigerTrailer1, tigerTrailer2, tigerTrailer3],
@@ -513,7 +538,11 @@ final Content witcher = Content(
     witcherEpisode2,
     witcherEpisode1,
     witcherEpisode2,
-    witcherEpisode3
+    witcherEpisode3,
+    witcherEpisode3,
+    witcherEpisode3,
+    witcherEpisode3,
+    witcherEpisode3,
   ],
   seasons: ["Season 1", "Season 2"],
   trailers: [witcherTrailer1, witcherTrailer2, witcherTrailer3],
@@ -698,13 +727,13 @@ final Content dangal = Content(
 );
 
 final NotificationData notification1 =
-    NotificationData("nId_1", "Avatar: New season now live", atla.id);
+    NotificationData("nId_1", "Avatar: New season now live", atla.id!);
 
 final NotificationData notification2 =
-    NotificationData("nId_2", "Shazam: New DC movie just released", shazam.id);
+    NotificationData("nId_2", "Shazam: New DC movie just released", shazam.id!);
 
 final NotificationData notification3 = NotificationData(
-    "nId_3", "Recomemded for you: Umbrella Academy", umbrellaAcademy.id);
+    "nId_3", "Recomemded for you: Umbrella Academy", umbrellaAcademy.id!);
 
 final NotificationData notification4 =
-    NotificationData("nId_4", "Recomemded for you: Matrix", matrix.id);
+    NotificationData("nId_4", "Recomemded for you: Matrix", matrix.id!);

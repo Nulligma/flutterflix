@@ -20,58 +20,69 @@ class ContentCategory {
 
 class HomeScreen extends StatefulWidget {
   final HomeScreenType type;
-  final String category;
+  final String? category;
 
-  const HomeScreen({Key key, this.type, this.category}) : super(key: key);
+  const HomeScreen({Key? key, required this.type, this.category})
+      : super(key: key);
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  ScrollController _scrollController;
-  double _scrollOffset = 0.0;
-  Content feature;
-  List<Content> modifiedMyList;
-  List<Content> modifiedPreviews;
-  List<Content> modifiedOriginals;
-  List<Content> modifiedTrending;
+  late ScrollController _scrollController;
+  ValueNotifier<double> _appBarOpacity = ValueNotifier(0.0);
+  double oldOpacity = 0.0;
+  Content? feature;
+  List<Content>? modifiedMyList;
+  List<Content>? modifiedPreviews;
+  List<Content>? modifiedOriginals;
+  List<Content>? modifiedTrending;
 
-  bool showingNotification;
+  late bool showingNotification;
 
-  OverlayEntry _overlayEntry;
+  late OverlayEntry _overlayEntry;
 
-  final double appBarSize = 50.0;
+  final double appBarSize = 60.0;
 
-  String genre;
-  String searchString;
+  String? genre;
+  String? searchString;
 
   @override
   void initState() {
     _scrollController = ScrollController()
       ..addListener(() {
-        setState(() {
-          _scrollOffset = _scrollController.offset;
-        });
+        if (_scrollController.offset > 350) _appBarOpacity.value = 0.85;
+
+        if (_scrollController.offset < 40)
+          _appBarOpacity.value = 0.0;
+        else if (_scrollController.offset < 120)
+          _appBarOpacity.value = 0.2;
+        else if (_scrollController.offset < 200)
+          _appBarOpacity.value = 0.4;
+        else if (_scrollController.offset < 280)
+          _appBarOpacity.value = 0.6;
+        else
+          _appBarOpacity.value = 0.8;
       });
 
     if (widget.type == HomeScreenType.tvshows ||
         widget.type == HomeScreenType.movies) {
-      String category = widget.category;
+      String? category = widget.category;
 
       if (category == ContentCategory.MOVIES)
         feature = Cloud.featureMovie;
       else if (category == ContentCategory.TV_SHOW) feature = Cloud.featureTv;
 
       modifiedPreviews =
-          Cloud.previews.where((el) => el.category == category).toList();
+          Cloud.previews!.where((el) => el.category == category).toList();
       modifiedOriginals =
-          Cloud.originals.where((el) => el.category == category).toList();
+          Cloud.originals!.where((el) => el.category == category).toList();
       modifiedTrending =
-          Cloud.trending.where((el) => el.category == category).toList();
+          Cloud.trending!.where((el) => el.category == category).toList();
 
       modifiedMyList =
-          Cloud.myList.where((el) => el.category == category).toList();
+          Cloud.myList!.where((el) => el.category == category).toList();
     } else if (widget.type == HomeScreenType.none) {
       feature = Cloud.featureHome;
       modifiedMyList = Cloud.myList;
@@ -82,7 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
       modifiedMyList = Cloud.myList;
     }
 
-    genre = Cloud.genres[0];
+    genre = Cloud.genres![0];
     searchString = "";
 
     showingNotification = false;
@@ -115,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
     else {
       _overlayEntry = _createOverlayEntry;
 
-      Overlay.of(context).insert(_overlayEntry);
+      Overlay.of(context)!.insert(_overlayEntry);
     }
 
     setState(() {
@@ -134,15 +145,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void changeGenre(String newGenre) {
-    if (newGenre == Cloud.genres[0]) {
+    if (newGenre == Cloud.genres![0]) {
       return;
     }
 
     setState(() {
       genre = newGenre;
-      modifiedMyList = Cloud.allContent
+      modifiedMyList = Cloud.allContent!
           .where((el) =>
-              el.category == widget.category && el.genres.contains(genre))
+              el.category == widget.category && el.genres!.contains(genre))
           .toList();
     });
   }
@@ -151,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       searchString = newSearchString;
 
-      modifiedMyList = Cloud.allContent
+      modifiedMyList = Cloud.allContent!
           .where((content) => searchFilter(content, newSearchString))
           .toList();
     });
@@ -222,18 +233,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   bool get showGrid {
-    if (widget.type == HomeScreenType.mylist || searchString.isNotEmpty)
+    if (widget.type == HomeScreenType.mylist || searchString!.isNotEmpty)
       return true;
     else if (widget.type == HomeScreenType.movies ||
         widget.type == HomeScreenType.tvshows) {
-      if (genre != Cloud.genres[0]) return true;
+      if (genre != Cloud.genres![0]) return true;
     }
 
     return false;
   }
 
   Future<bool> willPop() async {
-    if (searchString != null && searchString.isNotEmpty) {
+    if (searchString != null && searchString!.isNotEmpty) {
       FocusScope.of(context).unfocus();
       setState(() {
         searchString = '';
@@ -260,7 +271,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Listener(
               onPointerUp: (_) => removeNotification(),
               child: CustomAppBar(
-                scrollOffset: _scrollOffset,
+                appBarOpacity: _appBarOpacity,
                 appBarType: widget.type == HomeScreenType.none
                     ? CustomAppBarType.home
                     : CustomAppBarType.custom_home,

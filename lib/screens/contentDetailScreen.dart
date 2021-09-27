@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterflix/database/clouddata.dart';
 import 'package:flutterflix/helpers/uiHelpers.dart';
@@ -12,9 +13,9 @@ import 'package:flutterflix/widgets/responsive.dart';
 import 'package:flutterflix/widgets/widgets.dart';
 
 class ContentDetails extends StatefulWidget {
-  final Content content;
+  final Content? content;
 
-  const ContentDetails({Key key, this.content}) : super(key: key);
+  const ContentDetails({Key? key, this.content}) : super(key: key);
 
   @override
   _ContentDetailsState createState() => _ContentDetailsState();
@@ -22,28 +23,28 @@ class ContentDetails extends StatefulWidget {
 
 class _ContentDetailsState extends State<ContentDetails>
     with SingleTickerProviderStateMixin {
-  String currentSeason;
+  String? currentSeason;
 
-  List<Tab> contentTabs;
-  List<Episode> seasonEpisodes;
+  late List<Tab> contentTabs;
+  List<Episode>? seasonEpisodes;
 
-  TabController _tabController;
+  TabController? _tabController;
   int selectedIndex = 0;
 
-  bool episodesLoaded;
-  bool trailersLoaded;
+  late bool episodesLoaded;
+  late bool trailersLoaded;
 
   @override
   void initState() {
     super.initState();
     episodesLoaded = trailersLoaded = true;
 
-    if (widget.content.category == ContentCategory.TV_SHOW) {
-      if (widget.content.episodes.length == 0) {
+    if (widget.content!.category == ContentCategory.TV_SHOW) {
+      if (widget.content!.episodes!.length == 0) {
         episodesLoaded = trailersLoaded = false;
-        Cloud.getEpisodes(widget.content).then((_) {
+        Cloud.getEpisodes(widget.content!).then((_) {
           episodesLoaded = true;
-          Cloud.getTrailers(widget.content).then((_) {
+          Cloud.getTrailers(widget.content!).then((_) {
             trailersLoaded = true;
             initRest();
             setState(() {});
@@ -51,10 +52,10 @@ class _ContentDetailsState extends State<ContentDetails>
         });
       } else
         initRest();
-    } else if (widget.content.category == ContentCategory.MOVIES) {
-      if (widget.content.trailers.length == 0) {
+    } else if (widget.content!.category == ContentCategory.MOVIES) {
+      if (widget.content!.trailers!.length == 0) {
         trailersLoaded = false;
-        Cloud.getTrailers(widget.content).then((_) {
+        Cloud.getTrailers(widget.content!).then((_) {
           trailersLoaded = true;
           initRest();
           setState(() {});
@@ -65,7 +66,7 @@ class _ContentDetailsState extends State<ContentDetails>
   }
 
   void initRest() {
-    if (widget.content.category == ContentCategory.MOVIES) {
+    if (widget.content!.category == ContentCategory.MOVIES) {
       contentTabs = <Tab>[
         Tab(text: 'TRAILERS & MORE'),
         Tab(text: 'MORE LIKE THIS'),
@@ -77,9 +78,9 @@ class _ContentDetailsState extends State<ContentDetails>
         Tab(text: 'MORE LIKE THIS'),
       ];
 
-      currentSeason = widget.content.seasons[0];
+      currentSeason = widget.content!.seasons![0];
 
-      seasonEpisodes = widget.content.episodes
+      seasonEpisodes = widget.content!.episodes!
           .where((Episode e) => e.seasonName == currentSeason)
           .toList();
     }
@@ -90,7 +91,7 @@ class _ContentDetailsState extends State<ContentDetails>
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _tabController!.dispose();
     super.dispose();
   }
 
@@ -98,18 +99,18 @@ class _ContentDetailsState extends State<ContentDetails>
     setState(() {
       currentSeason = newSeason;
 
-      seasonEpisodes = widget.content.episodes
+      seasonEpisodes = widget.content!.episodes!
           .where((Episode e) => e.seasonName == currentSeason)
           .toList();
     });
   }
 
   List<Widget> get tabs {
-    if (widget.content.category == ContentCategory.MOVIES) {
+    if (widget.content!.category == ContentCategory.MOVIES) {
       return [
         Visibility(
           child: _TrailerList(
-            trailers: widget.content.trailers,
+            trailers: widget.content!.trailers,
           ),
           maintainState: true,
           visible: selectedIndex == 0,
@@ -136,7 +137,7 @@ class _ContentDetailsState extends State<ContentDetails>
         ),
         Visibility(
           child: _TrailerList(
-            trailers: widget.content.trailers,
+            trailers: widget.content!.trailers,
           ),
           maintainState: true,
           visible: selectedIndex == 1,
@@ -157,7 +158,7 @@ class _ContentDetailsState extends State<ContentDetails>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        widget.content.category == ContentCategory.MOVIES
+        widget.content!.category == ContentCategory.MOVIES
             ? Container()
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,7 +204,7 @@ class _ContentDetailsState extends State<ContentDetails>
         Container(
           height: 133.0,
           child: _TrailerList(
-            trailers: widget.content.trailers,
+            trailers: widget.content!.trailers,
           ),
         ),
         SizedBox(
@@ -211,9 +212,9 @@ class _ContentDetailsState extends State<ContentDetails>
         ),
         ContentList(
           title: 'MORE LIKE THIS',
-          contentList: Cloud.allContent
-              .where((Content c) =>
-                  c.genres.any((String s) => widget.content.genres.contains(s)))
+          contentList: Cloud.allContent!
+              .where((Content c) => c.genres!
+                  .any((String s) => widget.content!.genres!.contains(s)))
               .toList(),
         ),
         SizedBox(
@@ -228,7 +229,7 @@ class _ContentDetailsState extends State<ContentDetails>
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text(widget.content.name),
+        title: Text(widget.content!.name!),
         backgroundColor: Colors.black.withOpacity(0.5),
       ),
       body: episodesLoaded && trailersLoaded
@@ -261,7 +262,7 @@ class _ContentDetailsState extends State<ContentDetails>
                             onTap: (int index) {
                               setState(() {
                                 selectedIndex = index;
-                                _tabController.animateTo(index);
+                                _tabController!.animateTo(index);
                               });
                             },
                           ),
@@ -281,17 +282,17 @@ class _ContentDetailsState extends State<ContentDetails>
 }
 
 class _EpisodeList extends StatelessWidget {
-  final String currentSeason;
+  final String? currentSeason;
   final Function changeCurrentSeason;
-  final List<Episode> seasonEpisodes;
-  final Content content;
+  final List<Episode>? seasonEpisodes;
+  final Content? content;
 
   const _EpisodeList(
-      {Key key,
-      @required this.currentSeason,
-      @required this.changeCurrentSeason,
-      @required this.seasonEpisodes,
-      @required this.content})
+      {Key? key,
+      required this.currentSeason,
+      required this.changeCurrentSeason,
+      required this.seasonEpisodes,
+      required this.content})
       : super(key: key);
 
   @override
@@ -308,7 +309,7 @@ class _EpisodeList extends StatelessWidget {
               icon: Icon(Icons.arrow_drop_down),
               iconSize: 24,
               elevation: 16,
-              onChanged: (String newValue) => {changeCurrentSeason(newValue)},
+              onChanged: (String? newValue) => {changeCurrentSeason(newValue)},
               dropdownColor: Color.fromRGBO(0, 0, 0, 0.8),
               style: TextStyle(
                 color: Color.fromRGBO(255, 255, 255, 0.6),
@@ -319,7 +320,7 @@ class _EpisodeList extends StatelessWidget {
                 height: 2,
                 color: Colors.white60,
               ),
-              items: content.seasons.map((value) {
+              items: content!.seasons!.map((value) {
                 return DropdownMenuItem<String>(
                   value: value,
                   child: Text(value),
@@ -334,7 +335,7 @@ class _EpisodeList extends StatelessWidget {
                   horizontal: 24.0,
                 ),
                 scrollDirection: Axis.horizontal,
-                itemCount: seasonEpisodes.length,
+                itemCount: seasonEpisodes!.length,
                 itemBuilder: (BuildContext context, int index) {
                   return _EpisodeTile(
                     index: index,
@@ -346,7 +347,7 @@ class _EpisodeList extends StatelessWidget {
               padding: EdgeInsets.zero,
               physics: NeverScrollableScrollPhysics(),
               shrinkWrap: true,
-              itemCount: seasonEpisodes.length,
+              itemCount: seasonEpisodes!.length,
               itemBuilder: (BuildContext context, int index) {
                 return _EpisodeTile(
                   index: index,
@@ -360,11 +361,11 @@ class _EpisodeList extends StatelessWidget {
 }
 
 class _EpisodeTile extends StatelessWidget {
-  final int index;
-  final List<Episode> seasonEpisodes;
+  final int? index;
+  final List<Episode>? seasonEpisodes;
 
   const _EpisodeTile({
-    Key key,
+    Key? key,
     this.index,
     this.seasonEpisodes,
   }) : super(key: key);
@@ -383,52 +384,31 @@ class _EpisodeTile extends StatelessWidget {
                     createRoute(
                         Scaffold(
                           appBar: AppBar(
-                            title: Text(seasonEpisodes[index].name),
+                            title: Text(seasonEpisodes![index!].name!),
                           ),
                           backgroundColor: Colors.black,
                           body: CustomVideoPlayer(
                               type: PlayerType.content,
-                              videoUrl: seasonEpisodes[index].videoUrl),
+                              videoUrl: seasonEpisodes![index!].videoUrl),
                         ),
                         Offset(0.0, 1.0),
                         Offset.zero)),
-                child: Container(
-                  margin: EdgeInsets.only(right: 8.0),
-                  width: 150.0,
-                  height: 90.0,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage(seasonEpisodes[index].imageUrl),
-                    ),
-                  ),
-                  child: Center(
-                    child: Container(
-                      height: 32.0,
-                      width: 32.0,
-                      child: OutlineButton(
-                        padding: EdgeInsets.all(0.0),
-                        onPressed: () {},
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(32.0),
-                          ),
-                        ),
-                        child: Container(
-                          height: 32.0,
-                          width: 32.0,
-                          decoration: BoxDecoration(
-                            color: Color.fromRGBO(0, 0, 0, 0.3),
-                            borderRadius: BorderRadius.circular(16.0),
-                          ),
-                          child: Icon(
-                            Icons.play_arrow,
-                            color: Colors.white,
-                            size: 24.0,
-                          ),
+                child: CachedNetworkImage(
+                  placeholder: (context, url) =>
+                      Center(child: CircularProgressIndicator()),
+                  errorWidget: (context, url, error) => Icon(Icons.error),
+                  imageUrl: seasonEpisodes![index!].imageUrl!,
+                  imageBuilder: (context, imageProvider) => Container(
+                      margin: EdgeInsets.only(right: 8.0),
+                      width: 150.0,
+                      height: 90.0,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: imageProvider,
                         ),
                       ),
-                    ),
-                  ),
+                      child: _PlayButton(seasonEpisodes![index!].videoUrl!,
+                          seasonEpisodes![index!].name!)),
                 ),
               ),
               Column(
@@ -438,7 +418,7 @@ class _EpisodeTile extends StatelessWidget {
                   SizedBox(
                     width: 200,
                     child: Text(
-                      '${index + 1}. ${seasonEpisodes[index].name}',
+                      '${index! + 1}. ${seasonEpisodes![index!].name}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -449,7 +429,7 @@ class _EpisodeTile extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${seasonEpisodes[index].duration}m',
+                    '${seasonEpisodes![index!].duration}m',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -462,7 +442,7 @@ class _EpisodeTile extends StatelessWidget {
             ],
           ),
           Text(
-            seasonEpisodes[index].summary,
+            seasonEpisodes![index!].summary!,
             //textAlign: TextAlign.left,
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
@@ -485,50 +465,57 @@ class _EpisodeTile extends StatelessWidget {
           createRoute(
               Scaffold(
                 appBar: AppBar(
-                  title: Text(seasonEpisodes[index].name),
+                  title: Text(seasonEpisodes![index!].name!),
                 ),
                 backgroundColor: Colors.black,
                 body: CustomVideoPlayer(
                     type: PlayerType.content,
-                    videoUrl: seasonEpisodes[index].videoUrl),
+                    videoUrl: seasonEpisodes![index!].videoUrl),
               ),
               Offset(0.0, 1.0),
               Offset.zero)),
       child: Stack(
         alignment: AlignmentDirectional.bottomStart,
         children: [
-          Container(
-            margin: EdgeInsets.only(right: 15.0),
-            width: tileWidth,
-            height: tileHeight,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: NetworkImage(seasonEpisodes[index].imageUrl),
+          CachedNetworkImage(
+            placeholder: (context, url) =>
+                Center(child: CircularProgressIndicator()),
+            errorWidget: (context, url, error) => Icon(Icons.error),
+            imageUrl: seasonEpisodes![index!].imageUrl!,
+            imageBuilder: (context, imageProvider) => Container(
+              margin: EdgeInsets.only(right: 15.0),
+              width: tileWidth,
+              height: tileHeight,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: imageProvider,
+                ),
               ),
-            ),
-            child: Center(
-              child: Container(
-                height: 32.0,
-                width: 32.0,
-                child: OutlineButton(
-                  padding: EdgeInsets.all(0.0),
-                  onPressed: () {},
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(32.0),
+              child: Center(
+                child: Container(
+                  height: 32.0,
+                  width: 32.0,
+                  child: OutlinedButton(
+                    onPressed: () {},
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(32.0),
+                        ),
+                      ),
                     ),
-                  ),
-                  child: Container(
-                    height: 32.0,
-                    width: 32.0,
-                    decoration: BoxDecoration(
-                      color: Color.fromRGBO(0, 0, 0, 0.3),
-                      borderRadius: BorderRadius.circular(16.0),
-                    ),
-                    child: Icon(
-                      Icons.play_arrow,
-                      color: Colors.white,
-                      size: 24.0,
+                    child: Container(
+                      height: 32.0,
+                      width: 32.0,
+                      decoration: BoxDecoration(
+                        color: Color.fromRGBO(0, 0, 0, 0.3),
+                        borderRadius: BorderRadius.circular(16.0),
+                      ),
+                      child: Icon(
+                        Icons.play_arrow,
+                        color: Colors.white,
+                        size: 24.0,
+                      ),
                     ),
                   ),
                 ),
@@ -547,7 +534,7 @@ class _EpisodeTile extends StatelessWidget {
           SizedBox(
             width: tileWidth,
             child: Text(
-              '${index + 1}. ${seasonEpisodes[index].name}',
+              '${index! + 1}. ${seasonEpisodes![index!].name}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -570,9 +557,9 @@ class _EpisodeTile extends StatelessWidget {
 }
 
 class _TrailerList extends StatelessWidget {
-  final List<Trailer> trailers;
+  final List<Trailer>? trailers;
 
-  const _TrailerList({Key key, this.trailers}) : super(key: key);
+  const _TrailerList({Key? key, this.trailers}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -582,9 +569,9 @@ class _TrailerList extends StatelessWidget {
           child: ListView.builder(
               padding: EdgeInsets.symmetric(horizontal: 24.0),
               scrollDirection: Axis.horizontal,
-              itemCount: trailers.length,
+              itemCount: trailers!.length,
               itemBuilder: (BuildContext context, int index) {
-                Trailer trailer = trailers[index];
+                Trailer trailer = trailers![index];
                 return _TrailerTile(trailer: trailer);
               }),
         ),
@@ -592,18 +579,51 @@ class _TrailerList extends StatelessWidget {
             padding: EdgeInsets.zero,
             physics: NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            itemCount: trailers.length,
+            itemCount: trailers!.length,
             itemBuilder: (BuildContext context, int index) {
-              Trailer trailer = trailers[index];
+              Trailer trailer = trailers![index];
               return _TrailerTile(trailer: trailer);
             }));
   }
 }
 
-class _TrailerTile extends StatelessWidget {
-  final Trailer trailer;
+class _PlayButton extends StatelessWidget {
+  final String url;
+  final String videoName;
 
-  const _TrailerTile({Key key, this.trailer}) : super(key: key);
+  const _PlayButton(this.url, this.videoName);
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        height: 32.0,
+        width: 32.0,
+        child: IconButton(
+          color: Colors.white,
+          icon: Icon(Icons.play_circle_fill),
+          onPressed: () => Navigator.push(
+              context,
+              createRoute(
+                  Scaffold(
+                    appBar: AppBar(
+                      title: Text(videoName),
+                    ),
+                    backgroundColor: Colors.black,
+                    body: CustomVideoPlayer(
+                        type: PlayerType.content, videoUrl: url),
+                  ),
+                  Offset(0.0, 1.0),
+                  Offset.zero)),
+        ),
+      ),
+    );
+  }
+}
+
+class _TrailerTile extends StatelessWidget {
+  final Trailer? trailer;
+
+  const _TrailerTile({Key? key, this.trailer}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -617,60 +637,38 @@ class _TrailerTile extends StatelessWidget {
               createRoute(
                   Scaffold(
                     appBar: AppBar(
-                      title: Text(trailer.name),
+                      title: Text(trailer!.name!),
                     ),
                     backgroundColor: Colors.black,
                     body: CustomVideoPlayer(
-                        type: PlayerType.content, videoUrl: trailer.videoUrl),
+                        type: PlayerType.content, videoUrl: trailer!.videoUrl),
                   ),
                   Offset(0.0, 1.0),
                   Offset.zero)),
           child: Stack(
               alignment: AlignmentDirectional.bottomStart,
               children: <Widget>[
-                Container(
-                  width: Responsive.isDesktop(context) ||
-                          Responsive.isTablet(context)
-                      ? 200
-                      : double.infinity,
-                  height: Responsive.isDesktop(context) ||
-                          Responsive.isTablet(context)
-                      ? 133
-                      : 300.0,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      fit: BoxFit.cover,
-                      image: NetworkImage(trailer.imageUrl),
-                    ),
-                  ),
-                  child: Center(
-                    child: Container(
-                      height: 32.0,
-                      width: 32.0,
-                      child: OutlineButton(
-                        padding: EdgeInsets.all(0.0),
-                        onPressed: () {},
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(32.0),
-                          ),
-                        ),
-                        child: Container(
-                          height: 32.0,
-                          width: 32.0,
-                          decoration: BoxDecoration(
-                            color: Color.fromRGBO(0, 0, 0, 0.3),
-                            borderRadius: BorderRadius.circular(16.0),
-                          ),
-                          child: Icon(
-                            Icons.play_arrow,
-                            color: Colors.white,
-                            size: 24.0,
-                          ),
+                CachedNetworkImage(
+                  placeholder: (context, url) =>
+                      Center(child: CircularProgressIndicator()),
+                  errorWidget: (context, url, error) => Icon(Icons.error),
+                  imageUrl: trailer!.imageUrl!,
+                  imageBuilder: (context, imageProvider) => Container(
+                      width: Responsive.isDesktop(context) ||
+                              Responsive.isTablet(context)
+                          ? 200
+                          : double.infinity,
+                      height: Responsive.isDesktop(context) ||
+                              Responsive.isTablet(context)
+                          ? 133
+                          : 300.0,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          fit: BoxFit.cover,
+                          image: imageProvider,
                         ),
                       ),
-                    ),
-                  ),
+                      child: _PlayButton(trailer!.videoUrl!, trailer!.name!)),
                 ),
                 Container(
                   width: Responsive.isDesktop(context) ||
@@ -688,7 +686,7 @@ class _TrailerTile extends StatelessWidget {
                           end: Alignment.topCenter)),
                 ),
                 Text(
-                  trailer.name,
+                  trailer!.name!,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(

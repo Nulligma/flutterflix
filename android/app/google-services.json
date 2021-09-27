@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "445942756582",
+    "project_id": "flutterflix-52f2f",
+    "storage_bucket": "flutterflix-52f2f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:445942756582:android:2113f60544e14e7c8fb727",
+        "android_client_info": {
+          "package_name": "com.nulligma.flutterflix"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "445942756582-tn9ap0u9l4vcl78icr1ksfct7p6mh5fq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAIZSo7PzzHBVRA_9EI5E-tfirbCF5y8Kg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "445942756582-tn9ap0u9l4vcl78icr1ksfct7p6mh5fq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

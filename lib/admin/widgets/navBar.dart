@@ -8,7 +8,7 @@ class NavBar extends StatelessWidget {
     FocusScope.of(context).unfocus();
   }
 
-  const NavBar({Key key, this.changeTab}) : super(key: key);
+  const NavBar({Key? key, required this.changeTab}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -22,7 +22,7 @@ class NavBar extends StatelessWidget {
           Container(
             width: 75,
             height: 75,
-            child: FlatButton(
+            child: TextButton(
               child: Icon(Icons.search),
               onPressed: () {
                 changeTab(AdminTab.SEARCH);
@@ -33,7 +33,7 @@ class NavBar extends StatelessWidget {
           Container(
             width: 75,
             height: 75,
-            child: FlatButton(
+            child: TextButton(
               child: Icon(Icons.notifications),
               onPressed: () {
                 changeTab(AdminTab.NOTIFICATION);
@@ -44,7 +44,7 @@ class NavBar extends StatelessWidget {
           Container(
             width: 75,
             height: 75,
-            child: FlatButton(
+            child: TextButton(
               child: Icon(Icons.close),
               onPressed: () {
                 Navigator.of(context).pop();

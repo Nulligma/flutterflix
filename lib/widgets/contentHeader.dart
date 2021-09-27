@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterflix/database/clouddata.dart';
 import 'package:flutterflix/helpers/uiHelpers.dart';
@@ -11,12 +12,12 @@ import 'package:flutterflix/widgets/verticalIconButton.dart';
 enum ContentHeaderType { Home, Details, Previews }
 
 class ContentHeader extends StatefulWidget {
-  final Content content;
+  final Content? content;
   final ContentHeaderType type;
-  final CustomVideoPlayer videoPlayer;
+  final CustomVideoPlayer? videoPlayer;
 
   const ContentHeader(
-      {Key key, @required this.content, @required this.type, this.videoPlayer})
+      {Key? key, required this.content, required this.type, this.videoPlayer})
       : super(key: key);
 
   @override
@@ -29,7 +30,7 @@ class _ContentHeaderState extends State<ContentHeader> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
         Text(
-          '${widget.content.percentMatch}% Match',
+          '${widget.content!.percentMatch}% Match',
           textAlign: TextAlign.left,
           style: TextStyle(
             color: Color.fromRGBO(0, 255, 0, 0.8),
@@ -38,7 +39,7 @@ class _ContentHeaderState extends State<ContentHeader> {
           ),
         ),
         Text(
-          widget.content.year.toString(),
+          widget.content!.year.toString(),
           textAlign: TextAlign.left,
           style: TextStyle(
             color: Color.fromRGBO(255, 255, 255, 0.6),
@@ -47,7 +48,7 @@ class _ContentHeaderState extends State<ContentHeader> {
           ),
         ),
         Text(
-          '${widget.content.rating} +',
+          '${widget.content!.rating} +',
           textAlign: TextAlign.left,
           style: TextStyle(
             color: Color.fromRGBO(255, 255, 255, 0.6),
@@ -56,7 +57,7 @@ class _ContentHeaderState extends State<ContentHeader> {
           ),
         ),
         Text(
-          durationToString(widget.content.duration),
+          durationToString(widget.content!.duration!),
           textAlign: TextAlign.left,
           style: TextStyle(
             color: Color.fromRGBO(255, 255, 255, 0.6),
@@ -78,11 +79,17 @@ class _ContentHeaderState extends State<ContentHeader> {
               : 500.0,
           child: widget.type == ContentHeaderType.Previews
               ? widget.videoPlayer
-              : Image(
-                  image: NetworkImage(widget.content.imageUrl),
-                  fit: BoxFit.cover,
-                  height: double.infinity,
-                  width: double.infinity,
+              : CachedNetworkImage(
+                  placeholder: (context, url) =>
+                      Center(child: CircularProgressIndicator()),
+                  errorWidget: (context, url, error) => Icon(Icons.error),
+                  imageUrl: widget.content!.imageUrl!,
+                  imageBuilder: (context, imageProvider) => Image(
+                    image: imageProvider,
+                    fit: BoxFit.cover,
+                    height: double.infinity,
+                    width: double.infinity,
+                  ),
                 ),
         ),
         Container(
@@ -101,7 +108,8 @@ class _ContentHeaderState extends State<ContentHeader> {
               width: 250.0,
               child: widget.type == ContentHeaderType.Details
                   ? contentRatings
-                  : Image.network(widget.content.titleImageUrl)),
+                  : CachedNetworkImage(
+                      imageUrl: widget.content!.titleImageUrl!)),
         ),
         Positioned(
             left: 0,
@@ -109,29 +117,29 @@ class _ContentHeaderState extends State<ContentHeader> {
             bottom: 40.0,
             child: widget.type == ContentHeaderType.Details
                 ? _PlayButton(
-                    videoUrl: widget.content.videoUrl,
-                    contentName: widget.content.name,
+                    videoUrl: widget.content!.videoUrl,
+                    contentName: widget.content!.name,
                   )
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       VerticalIconButton(
-                        icon: Cloud.myList.contains(widget.content)
+                        icon: Cloud.myList!.contains(widget.content)
                             ? Icons.check
                             : Icons.add,
                         title: 'List',
                         onTap: () {
-                          if (Cloud.myList.contains(widget.content))
-                            Cloud.updateMyList(widget.content, false);
+                          if (Cloud.myList!.contains(widget.content))
+                            Cloud.updateMyList(widget.content!, false);
                           else
-                            Cloud.updateMyList(widget.content, true);
+                            Cloud.updateMyList(widget.content!, true);
 
                           setState(() {});
                         },
                       ),
                       _PlayButton(
-                        videoUrl: widget.content.videoUrl,
-                        contentName: widget.content.name,
+                        videoUrl: widget.content!.videoUrl,
+                        contentName: widget.content!.name,
                       ),
                       VerticalIconButton(
                         icon: Icons.info_outline,
@@ -158,11 +166,17 @@ class _ContentHeaderState extends State<ContentHeader> {
           width: 1200.0,
           child: widget.type == ContentHeaderType.Previews
               ? widget.videoPlayer
-              : Image(
-                  image: NetworkImage(widget.content.imageUrlLandscape),
-                  fit: BoxFit.cover,
-                  height: double.infinity,
-                  width: double.infinity,
+              : CachedNetworkImage(
+                  placeholder: (context, url) =>
+                      Center(child: CircularProgressIndicator()),
+                  errorWidget: (context, url, error) => Icon(Icons.error),
+                  imageUrl: widget.content!.imageUrlLandscape!,
+                  imageBuilder: (context, imageProvider) => Image(
+                    image: imageProvider,
+                    fit: BoxFit.cover,
+                    height: double.infinity,
+                    width: double.infinity,
+                  ),
                 ),
         ),
       ),
@@ -194,13 +208,14 @@ class _ContentHeaderState extends State<ContentHeader> {
                   ? Container()
                   : SizedBox(
                       width: 250.0,
-                      child: Image.network(widget.content.titleImageUrl),
+                      child: CachedNetworkImage(
+                          imageUrl: widget.content!.titleImageUrl!),
                     ),
               const SizedBox(height: 15.0),
               Container(
                 width: 500.0,
                 child: Text(
-                  widget.content.description,
+                  widget.content!.description!,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18.0,
@@ -239,22 +254,24 @@ class _ContentHeaderState extends State<ContentHeader> {
               Row(
                 children: [
                   _PlayButton(
-                    videoUrl: widget.content.videoUrl,
-                    contentName: widget.content.name,
+                    videoUrl: widget.content!.videoUrl,
+                    contentName: widget.content!.name,
                   ),
                   const SizedBox(width: 16.0),
                   widget.type == ContentHeaderType.Details
                       ? Container()
-                      : FlatButton.icon(
-                          padding:
-                              const EdgeInsets.fromLTRB(25.0, 10.0, 30.0, 10.0),
+                      : TextButton.icon(
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.fromLTRB(
+                                25.0, 10.0, 30.0, 10.0),
+                            primary: Colors.white,
+                          ),
                           onPressed: () => Navigator.push(
                               context,
                               createRoute(
                                   ContentDetails(content: widget.content),
                                   Offset(0.0, 1.0),
                                   Offset.zero)),
-                          color: Colors.white,
                           icon: const Icon(Icons.info_outline, size: 30.0),
                           label: const Text(
                             'More Info',
@@ -288,23 +305,26 @@ class _ContentHeaderState extends State<ContentHeader> {
 }
 
 class _PlayButton extends StatelessWidget {
-  final String videoUrl;
-  final String contentName;
+  final String? videoUrl;
+  final String? contentName;
 
   const _PlayButton(
-      {Key key, @required this.videoUrl, @required this.contentName})
+      {Key? key, required this.videoUrl, required this.contentName})
       : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return FlatButton.icon(
-        padding: const EdgeInsets.fromLTRB(25.0, 10.0, 30.0, 10.0),
+    return TextButton.icon(
+        style: TextButton.styleFrom(
+            padding: const EdgeInsets.fromLTRB(25.0, 10.0, 30.0, 10.0),
+            primary: Colors.black,
+            backgroundColor: Colors.white),
         onPressed: () {
           Navigator.push(
               context,
               createRoute(
                   Scaffold(
                     appBar: AppBar(
-                      title: Text(contentName),
+                      title: Text(contentName!),
                     ),
                     backgroundColor: Colors.black,
                     body: CustomVideoPlayer(
@@ -313,7 +333,6 @@ class _PlayButton extends StatelessWidget {
                   Offset(0.0, 1.0),
                   Offset.zero));
         },
-        color: Colors.white,
         icon: const Icon(Icons.play_arrow, size: 30.0),
         label: const Text(
           'Play',

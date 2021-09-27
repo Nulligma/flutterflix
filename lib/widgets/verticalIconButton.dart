@@ -6,16 +6,16 @@ class VerticalIconButton extends StatelessWidget {
   final Function onTap;
 
   const VerticalIconButton(
-      {Key key,
-      @required this.icon,
-      @required this.title,
-      @required this.onTap})
+      {Key? key,
+      required this.icon,
+      required this.title,
+      required this.onTap})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap,
+      onTap: onTap as void Function()?,
       child: Column(
         children: [
           Icon(icon, color: Colors.white),

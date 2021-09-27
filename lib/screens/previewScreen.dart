@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutterflix/database/clouddata.dart';
 import 'package:flutterflix/models/contentModel.dart';
 import 'package:flutterflix/widgets/customVideoPlayer.dart';
 import 'package:flutterflix/widgets/widgets.dart';
 
 class PreviewScreen extends StatefulWidget {
   final int startingContent;
+  final List<Content> previewContents;
 
-  const PreviewScreen({Key key, @required this.startingContent})
+  const PreviewScreen(
+      {Key? key, required this.startingContent, required this.previewContents})
       : super(key: key);
 
   @override
@@ -15,8 +16,8 @@ class PreviewScreen extends StatefulWidget {
 }
 
 class _PreviewScreenState extends State<PreviewScreen> {
-  PageController _pageController;
-  int _index;
+  late PageController _pageController;
+  late int _index;
 
   @override
   void initState() {
@@ -33,7 +34,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
   }
 
   void videoEnded() {
-    if (_index + 1 == Cloud.previews.length)
+    if (_index + 1 == widget.previewContents.length)
       Navigator.of(context).pop();
     else
       _pageController.jumpToPage(_index + 1);
@@ -44,11 +45,11 @@ class _PreviewScreenState extends State<PreviewScreen> {
     return Scaffold(
         body: Stack(children: [
       PageView.builder(
-        itemCount: Cloud.previews.length,
+        itemCount: widget.previewContents.length,
         controller: _pageController,
         onPageChanged: onPageChanged,
         itemBuilder: (_, i) {
-          Content previewContent = Cloud.previews[i];
+          Content previewContent = widget.previewContents[i];
 
           return ContentHeader(
             content: previewContent,

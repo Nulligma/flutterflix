@@ -10,18 +10,18 @@ import 'package:flutterflix/widgets/responsive.dart';
 enum CustomAppBarType { home, custom_home }
 
 class CustomAppBar extends StatelessWidget {
-  final double scrollOffset;
+  final ValueNotifier<double> appBarOpacity;
   final CustomAppBarType appBarType;
-  final String category;
-  final String genre;
-  final Function onGenreChange;
-  final Function onSearchChange;
-  final Function showNotification;
+  final String? category;
+  final String? genre;
+  final Function? onGenreChange;
+  final Function? onSearchChange;
+  final Function? showNotification;
 
   const CustomAppBar(
-      {Key key,
-      @required this.scrollOffset,
-      @required this.appBarType,
+      {Key? key,
+      required this.appBarOpacity,
+      required this.appBarType,
       this.category,
       this.genre,
       this.onGenreChange,
@@ -41,7 +41,7 @@ class CustomAppBar extends StatelessWidget {
   }
 
   Widget get appBarDesktop {
-    String subHeading;
+    String? subHeading;
 
     if (category == null) {
       if (appBarType == CustomAppBarType.custom_home)
@@ -61,52 +61,32 @@ class CustomAppBar extends StatelessWidget {
     );
   }
 
-  double get opacity {
-    if (scrollOffset > 350) return 0.85;
-
-    if (scrollOffset < 40)
-      return 0.0;
-    else if (scrollOffset < 80)
-      return 0.1;
-    else if (scrollOffset < 120)
-      return 0.2;
-    else if (scrollOffset < 160)
-      return 0.3;
-    else if (scrollOffset < 200)
-      return 0.4;
-    else if (scrollOffset < 240)
-      return 0.5;
-    else if (scrollOffset < 280)
-      return 0.6;
-    else if (scrollOffset < 320)
-      return 0.7;
-    else
-      return 0.8;
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        vertical: 10.0,
-        horizontal: 24.0,
-      ),
-      color: Colors.black.withOpacity(opacity),
-      child: Responsive(
-        mobile: appBarMobile,
-        desktop: appBarDesktop,
+    return ValueListenableBuilder<double>(
+      valueListenable: appBarOpacity,
+      builder: (ctx, newOpacity, child) => Container(
+        padding: const EdgeInsets.symmetric(
+          vertical: 10.0,
+          horizontal: 24.0,
+        ),
+        color: Colors.black.withOpacity(newOpacity),
+        child: Responsive(
+          mobile: appBarMobile,
+          desktop: appBarDesktop,
+        ),
       ),
     );
   }
 }
 
 class _CategoryAppBarMobile extends StatelessWidget {
-  final String category;
-  final Function onGenreChange;
-  final String genre;
+  final String? category;
+  final Function? onGenreChange;
+  final String? genre;
 
   const _CategoryAppBarMobile(
-      {Key key, this.category, this.onGenreChange, this.genre})
+      {Key? key, this.category, this.onGenreChange, this.genre})
       : super(key: key);
 
   bool get showGenreSelector {
@@ -131,7 +111,7 @@ class _CategoryAppBarMobile extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  category,
+                  category!,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16.0,
@@ -154,10 +134,10 @@ class _CategoryAppBarMobile extends StatelessWidget {
                           height: 2,
                           color: Colors.white,
                         ),
-                        onChanged: (String newValue) {
-                          onGenreChange(newValue);
+                        onChanged: (String? newValue) {
+                          onGenreChange!(newValue);
                         },
-                        items: Cloud.genres.map((value) {
+                        items: Cloud.genres!.map((value) {
                           return DropdownMenuItem<String>(
                             value: value,
                             child: Text(value),
@@ -191,15 +171,15 @@ class _CustomAppBarMobile extends StatelessWidget {
 }
 
 class _CustomAppBarDesktop extends StatelessWidget {
-  final Function onSearchChange;
-  final Function onGenreChange;
-  final String genre;
-  final String category;
-  final String subHeading;
-  final Function showNotification;
+  final Function? onSearchChange;
+  final Function? onGenreChange;
+  final String? genre;
+  final String? category;
+  final String? subHeading;
+  final Function? showNotification;
 
   const _CustomAppBarDesktop(
-      {Key key,
+      {Key? key,
       this.onSearchChange,
       this.category,
       this.onGenreChange,
@@ -224,7 +204,7 @@ class _CustomAppBarDesktop extends StatelessWidget {
 
   Widget get subHeadingWidget {
     return Text(
-      subHeading,
+      subHeading!,
       style: const TextStyle(
         color: Colors.white,
         fontSize: 20.0,
@@ -253,10 +233,10 @@ class _CustomAppBarDesktop extends StatelessWidget {
               height: 2,
               color: Colors.white,
             ),
-            onChanged: (String newValue) {
-              onGenreChange(newValue);
+            onChanged: (String? newValue) {
+              onGenreChange!(newValue);
             },
-            items: Cloud.genres.map((value) {
+            items: Cloud.genres!.map((value) {
               return DropdownMenuItem<String>(
                 value: value,
                 child: Text(value),
@@ -287,7 +267,7 @@ class _CustomAppBarDesktop extends StatelessWidget {
               children: [
                 Expanded(
                   child: TextField(
-                    onChanged: onSearchChange,
+                    onChanged: onSearchChange as void Function(String)?,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16.0,
@@ -313,7 +293,7 @@ class _CustomAppBarDesktop extends StatelessWidget {
                   icon: Icon(Icons.notifications),
                   iconSize: 28.0,
                   color: Colors.white,
-                  onPressed: showNotification,
+                  onPressed: showNotification as void Function()?,
                 ),
                 IconButton(
                   padding: EdgeInsets.zero,
@@ -337,15 +317,15 @@ class _AppBarButton extends StatelessWidget {
   final Function onTap;
 
   const _AppBarButton({
-    Key key,
-    @required this.title,
-    @required this.onTap,
+    Key? key,
+    required this.title,
+    required this.onTap,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return TextButton(
-      onPressed: onTap,
+      onPressed: onTap as void Function()?,
       child: Text(
         title,
         style: const TextStyle(

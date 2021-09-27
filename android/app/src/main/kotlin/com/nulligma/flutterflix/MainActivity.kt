@@ -1,4 +1,4 @@
-package com.example.flutterflix
+package com.nulligma.flutterflix
 
 import io.flutter.embedding.android.FlutterActivity
 

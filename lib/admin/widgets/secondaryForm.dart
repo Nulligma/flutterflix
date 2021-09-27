@@ -15,13 +15,13 @@ class SecondaryForm extends StatefulWidget {
   final SecondaryFormType type;
   final Function onConfirm;
   final dynamic initValue;
-  final List itemList;
+  final List? itemList;
 
   const SecondaryForm(
-      {Key key,
-      this.title,
-      this.type,
-      this.onConfirm,
+      {Key? key,
+      required this.title,
+      required this.type,
+      required this.onConfirm,
       this.initValue,
       this.itemList})
       : super(key: key);
@@ -31,9 +31,9 @@ class SecondaryForm extends StatefulWidget {
 }
 
 class _SecondaryFormState extends State<SecondaryForm> {
-  Color color;
-  String text;
-  Map<String, dynamic> variableMap;
+  Color? color;
+  String? text;
+  Map<String, dynamic>? variableMap;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
@@ -45,19 +45,17 @@ class _SecondaryFormState extends State<SecondaryForm> {
         text = widget.initValue;
         break;
       case SecondaryFormType.TextList:
-        text = widget.initValue ?? "";
+        text = widget.initValue ?? widget.itemList![0];
         break;
       case SecondaryFormType.ColorList:
         color = Color(getColorInt_fromString(widget.initValue.toString()));
         break;
       case SecondaryFormType.URL:
-        // TODO: Handle this case.
         break;
       case SecondaryFormType.Custom:
         variableMap = Map.from(widget.initValue.variableMap);
         break;
       case SecondaryFormType.Delete:
-        // TODO: Handle this case.
         break;
     }
   }
@@ -85,30 +83,21 @@ class _SecondaryFormState extends State<SecondaryForm> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          children: [Text("Current text:"), Spacer(), Text(text)],
-        ),
-        Divider(),
-        Row(
-          children: [
-            Text("Select new text"),
-            Spacer(),
-            DropdownButton<String>(
-              icon: Icon(Icons.arrow_drop_down),
-              iconSize: 24,
-              onChanged: (value) {
-                setState(() {
-                  text = value;
-                });
-              },
-              items: widget.itemList.map((value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-            ),
-          ],
+        DropdownButton<String>(
+          value: text!,
+          icon: Icon(Icons.arrow_drop_down),
+          iconSize: 24,
+          onChanged: (value) {
+            setState(() {
+              text = value;
+            });
+          },
+          items: widget.itemList!.map((value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
+          }).toList(),
         )
       ],
     );
@@ -139,10 +128,10 @@ class _SecondaryFormState extends State<SecondaryForm> {
               iconSize: 24,
               onChanged: (value) {
                 setState(() {
-                  color = Color(getColorInt_fromString(value));
+                  color = Color(getColorInt_fromString(value!));
                 });
               },
-              items: widget.itemList.map((value) {
+              items: widget.itemList!.map((value) {
                 return DropdownMenuItem<String>(
                   value: value,
                   child: Container(
@@ -165,8 +154,8 @@ class _SecondaryFormState extends State<SecondaryForm> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         mainAxisSize: MainAxisSize.min,
-        children: variableMap.entries.map((entry) {
-          String value;
+        children: variableMap!.entries.map((entry) {
+          String? value;
           if (entry.value == null)
             value = null;
           else
@@ -178,13 +167,13 @@ class _SecondaryFormState extends State<SecondaryForm> {
             onSaved: (value) {
               var newValue;
               if (entry.value is int)
-                newValue = int.parse(value);
+                newValue = int.parse(value!);
               else
                 newValue = value;
-              variableMap[entry.key] = newValue;
+              variableMap![entry.key] = newValue;
             },
-            validator: (String value) {
-              if (value.isEmpty) return "This is required";
+            validator: (String? value) {
+              if (value!.isEmpty) return "This is required";
 
               return null;
             },
@@ -212,7 +201,6 @@ class _SecondaryFormState extends State<SecondaryForm> {
       case SecondaryFormType.ColorList:
         return _colorForm;
       case SecondaryFormType.URL:
-        // TODO: Handle this case.
         break;
       case SecondaryFormType.Custom:
         return _customForm;
@@ -237,11 +225,10 @@ class _SecondaryFormState extends State<SecondaryForm> {
         newVal = color.toString();
         break;
       case SecondaryFormType.URL:
-        // TODO: Handle this case.
         break;
       case SecondaryFormType.Custom:
-        if (!_formKey.currentState.validate()) return;
-        _formKey.currentState.save();
+        if (!_formKey.currentState!.validate()) return;
+        _formKey.currentState!.save();
         newVal = variableMap;
         break;
       case SecondaryFormType.Delete:
@@ -261,13 +248,13 @@ class _SecondaryFormState extends State<SecondaryForm> {
     return AlertDialog(
       title: Text(widget.title),
       actions: [
-        FlatButton(
+        TextButton(
           child: Text("Confirm"),
           onPressed: () {
             confirm();
           },
         ),
-        FlatButton(
+        TextButton(
           child: Text("Cancel"),
           onPressed: () {
             Navigator.of(context).pop();

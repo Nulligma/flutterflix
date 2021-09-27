@@ -1,13 +1,13 @@
 class Episode {
-  int number;
-  String name;
-  String seasonName;
-  String imageUrl;
-  String videoUrl;
-  String summary;
-  int duration;
+  int? number;
+  String? name;
+  String? seasonName;
+  String? imageUrl;
+  String? videoUrl;
+  String? summary;
+  int? duration;
 
-  Map<String, dynamic> variableMap;
+  late Map<String, dynamic> variableMap;
 
   Episode(
       {this.number,

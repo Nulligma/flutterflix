@@ -9,31 +9,31 @@ import 'package:flutterflix/sampleData/localdata.dart' as LocalData;
 import 'package:flutterflix/screens/homeScreen.dart';
 
 class Cloud {
-  static List genres;
-  static List<Content> previews;
-  static List<Content> topSearches;
-  static List<Content> originals;
-  static List<Content> trending;
+  static List? genres;
+  static List<Content>? previews;
+  static List<Content>? topSearches;
+  static List<Content>? originals;
+  static List<Content>? trending;
 
-  static List myListContentIds;
-  static List<Content> myList;
+  static List? myListContentIds;
+  static List<Content>? myList;
 
-  static List<NotificationData> notificationList;
+  static List<NotificationData>? notificationList;
 
-  static Content featureHome;
-  static Content featureTv;
-  static Content featureMovie;
+  static Content? featureHome;
+  static Content? featureTv;
+  static Content? featureMovie;
 
-  static List<Content> allContent;
+  static List<Content>? allContent;
 
   static Future<void> updateMyList(Content content, bool add) async {
-    String contentId = content.id;
+    String? contentId = content.id;
     if (add) {
-      myListContentIds.add(contentId);
-      myList.add(content);
+      myListContentIds!.add(contentId);
+      myList!.add(content);
     } else {
-      myListContentIds.remove(contentId);
-      myList.remove(content);
+      myListContentIds!.remove(contentId);
+      myList!.remove(content);
     }
 
     Map<String, dynamic> newListOfIds = {
@@ -42,7 +42,7 @@ class Cloud {
 
     await FirebaseFirestore.instance
         .collection(FirestoreFields.USERS_COLLECTION)
-        .doc(FirebaseAuth.instance.currentUser.uid)
+        .doc(FirebaseAuth.instance.currentUser!.uid)
         .update(newListOfIds);
 
     return;
@@ -51,8 +51,8 @@ class Cloud {
   static Future<void> updateNotification() async {
     Map<String, dynamic> notificationMap = {};
 
-    notificationList.forEach((NotificationData nd) {
-      notificationMap[nd.id] = [nd.contentId, nd.title];
+    notificationList!.forEach((NotificationData nd) {
+      notificationMap[nd.id!] = [nd.contentId, nd.title];
     });
 
     DocumentReference notificationDocument = FirebaseFirestore.instance
@@ -76,7 +76,7 @@ class Cloud {
 
     if (content.category == ContentCategory.TV_SHOW) {
       int episodeIndex = 1;
-      for (Episode e in content.episodes) {
+      for (Episode e in content.episodes!) {
         await episodeCollection.doc("ep${episodeIndex++}").set(e.variableMap);
       }
     }
@@ -85,7 +85,7 @@ class Cloud {
         contentDocument.collection(FirestoreFields.TRAILER_COLLECTION);
 
     int trailerIndex = 1;
-    for (Trailer t in content.trailers) {
+    for (Trailer t in content.trailers!) {
       await trailerCollection
           .doc("trailer${trailerIndex++}")
           .set(t.variableMap);
@@ -93,12 +93,12 @@ class Cloud {
   }
 
   static Future<void> deleteContent(Content content) async {
-    if (previews.contains(content)) previews.remove(content);
-    if (topSearches.contains(content)) topSearches.remove(content);
-    if (originals.contains(content)) originals.remove(content);
-    if (trending.contains(content)) trending.remove(content);
+    if (previews!.contains(content)) previews!.remove(content);
+    if (topSearches!.contains(content)) topSearches!.remove(content);
+    if (originals!.contains(content)) originals!.remove(content);
+    if (trending!.contains(content)) trending!.remove(content);
 
-    allContent.remove(content);
+    allContent!.remove(content);
 
     await FirebaseFirestore.instance
         .collection(FirestoreFields.CONTENT_COLLECTION)
@@ -116,8 +116,8 @@ class Cloud {
         .get();
 
     contentsTrailersRef.docs.forEach((doc) {
-      Trailer trailer = Trailer.fromMap(doc.data());
-      content.trailers.add(trailer);
+      Trailer trailer = Trailer.fromMap(doc.data()!);
+      content.trailers!.add(trailer);
     });
 
     return;
@@ -131,32 +131,32 @@ class Cloud {
         .get();
 
     contentsEpisodesRef.docs.forEach((doc) {
-      Episode episode = Episode.fromMap(doc.data());
-      content.episodes.add(episode);
+      Episode episode = Episode.fromMap(doc.data()!);
+      content.episodes!.add(episode);
 
-      if (!content.seasons.contains(episode.seasonName))
-        content.seasons.add(episode.seasonName);
+      if (!content.seasons!.contains(episode.seasonName))
+        content.seasons!.add(episode.seasonName!);
     });
 
     return;
   }
 
   static Future<void> getDataFromCloud() async {
-    List previewsContentIds;
-    List topSearchesContentIds;
-    List originalsContentIds;
-    List trendingContentIds;
+    List? previewsContentIds;
+    List? topSearchesContentIds;
+    List? originalsContentIds;
+    List? trendingContentIds;
 
-    String featureHomeId;
-    String featureTvId;
-    String featureMovieId;
+    String? featureHomeId;
+    String? featureTvId;
+    String? featureMovieId;
 
     DocumentSnapshot lists = await FirebaseFirestore.instance
         .collection(FirestoreFields.APPDATA_COLLECTION)
         .doc(FirestoreFields.APPDATA_LISTS)
         .get();
 
-    Map<String, dynamic> listData = lists.data();
+    Map<String, dynamic> listData = lists.data()!;
 
     genres = listData[FirestoreFields.APPDATA_LISTS_GENRES];
     previewsContentIds = listData[FirestoreFields.APPDATA_LISTS_PREVIEWS];
@@ -166,7 +166,7 @@ class Cloud {
 
     DocumentSnapshot userData = await FirebaseFirestore.instance
         .collection(FirestoreFields.USERS_COLLECTION)
-        .doc(FirebaseAuth.instance.currentUser.uid)
+        .doc(FirebaseAuth.instance.currentUser!.uid)
         .get();
 
     myListContentIds = userData[FirestoreFields.USER_LIST];
@@ -176,7 +176,7 @@ class Cloud {
         .doc(FirestoreFields.APPDATA_FEATURES)
         .get();
 
-    Map<String, dynamic> featureData = features.data();
+    Map<String, dynamic> featureData = features.data()!;
 
     featureHomeId = featureData[FirestoreFields.APPDATA_FEATURES_HOME];
     featureTvId = featureData[FirestoreFields.APPDATA_FEATURES_TV];
@@ -193,28 +193,28 @@ class Cloud {
     trending = [];
     myList = [];
     contentsRef.docs.forEach((doc) {
-      Content content = Content.fromMap(doc.id, doc.data());
+      Content content = Content.fromMap(doc.id, doc.data()!);
 
-      allContent.add(content);
+      allContent!.add(content);
 
       if (content.id == featureHomeId) featureHome = content;
       if (content.id == featureTvId) featureTv = content;
       if (content.id == featureMovieId) featureMovie = content;
 
-      previewsContentIds.forEach((val) {
-        if (val == content.id) previews.add(content);
+      previewsContentIds!.forEach((val) {
+        if (val == content.id) previews!.add(content);
       });
-      topSearchesContentIds.forEach((val) {
-        if (val == content.id) topSearches.add(content);
+      topSearchesContentIds!.forEach((val) {
+        if (val == content.id) topSearches!.add(content);
       });
-      originalsContentIds.forEach((val) {
-        if (val == content.id) originals.add(content);
+      originalsContentIds!.forEach((val) {
+        if (val == content.id) originals!.add(content);
       });
-      trendingContentIds.forEach((val) {
-        if (val == content.id) trending.add(content);
+      trendingContentIds!.forEach((val) {
+        if (val == content.id) trending!.add(content);
       });
-      myListContentIds.forEach((val) {
-        if (val == content.id) myList.add(content);
+      myListContentIds!.forEach((val) {
+        if (val == content.id) myList!.add(content);
       });
     });
 
@@ -223,12 +223,12 @@ class Cloud {
         .doc(FirestoreFields.APPDATA_NOTIFICATIONS)
         .get();
 
-    Map<String, dynamic> notificaionsData = notificaionsSnap.data();
+    Map<String, dynamic> notificaionsData = notificaionsSnap.data()!;
 
     notificationList = [];
     notificaionsData.forEach((key, value) {
       NotificationData notification = NotificationData(key, value[1], value[0]);
-      notificationList.add(notification);
+      notificationList!.add(notification);
     });
 
     return;

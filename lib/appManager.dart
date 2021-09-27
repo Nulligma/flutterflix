@@ -20,25 +20,28 @@ class AppManager extends StatefulWidget {
 }
 
 class _AppManagerState extends State<AppManager> {
-  AppState appState;
-  String scaffoldHeading;
-  String scaffoldSubheading;
-  String scaffoldButtonText;
+  late AppState appState;
+  String? scaffoldHeading;
+  String? scaffoldSubheading;
+  String? scaffoldButtonText;
 
   @override
   void initState() {
     super.initState();
     appState = AppState.loading;
-    FirebaseFirestore.instance
+    loadData();
+  }
+
+  void loadData() async {
+    QuerySnapshot val = await FirebaseFirestore.instance
         .collection(FirestoreFields.APPDATA_COLLECTION)
-        .get()
-        .then((val) {
-      setState(() {
-        if (val.docs.length == 0)
-          appState = AppState.databaseSetupPending;
-        else
-          appState = AppState.databaseDownloading;
-      });
+        .get();
+
+    setState(() {
+      if (val.docs.length == 0)
+        appState = AppState.databaseSetupPending;
+      else
+        appState = AppState.databaseDownloading;
     });
   }
 
@@ -81,12 +84,11 @@ class _AppManagerState extends State<AppManager> {
         });
         break;
       case AppState.ready:
-        // TODO: Handle this case.
         break;
     }
   }
 
-  Widget scaffold(String heading, {String buttonText, String subheading}) {
+  Widget scaffold(String? heading, {String? buttonText, String? subheading}) {
     return Container(
       decoration: BoxDecoration(
           color: Colors.black,
@@ -109,7 +111,7 @@ class _AppManagerState extends State<AppManager> {
         body: Center(
           child: Container(
             color: Colors.black.withOpacity(0.75),
-            width: 500,
+            width: 400,
             height: 700,
             child: Padding(
                 padding:
@@ -120,7 +122,7 @@ class _AppManagerState extends State<AppManager> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: <Widget>[
                           Text(
-                            heading,
+                            heading!,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 28.0,
@@ -134,8 +136,9 @@ class _AppManagerState extends State<AppManager> {
                             width: double.infinity,
                             height: 50.0,
                             child: buttonText != null
-                                ? FlatButton(
-                                    color: Colors.red[800],
+                                ? TextButton(
+                                    style: TextButton.styleFrom(
+                                        backgroundColor: Colors.red[800]),
                                     child: Text(
                                       buttonText,
                                       style: const TextStyle(
@@ -151,7 +154,7 @@ class _AppManagerState extends State<AppManager> {
                                   )
                                 : Center(
                                     child: Text(
-                                      subheading,
+                                      subheading!,
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 18.0,
@@ -174,7 +177,7 @@ class _AppManagerState extends State<AppManager> {
                           Padding(
                             padding: EdgeInsets.only(top: 16),
                             child: Text(
-                              heading,
+                              heading!,
                               style: TextStyle(
                                   color: Colors.white, fontSize: 20.0),
                             ),

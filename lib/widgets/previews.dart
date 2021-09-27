@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterflix/helpers/uiHelpers.dart';
 import 'package:flutterflix/models/contentModel.dart';
@@ -5,9 +6,9 @@ import 'package:flutterflix/screens/previewScreen.dart';
 
 class Previews extends StatelessWidget {
   final String title;
-  final List<Content> contentList;
+  final List<Content>? contentList;
 
-  const Previews({Key key, @required this.title, @required this.contentList})
+  const Previews({Key? key, required this.title, required this.contentList})
       : super(key: key);
 
   @override
@@ -34,30 +35,36 @@ class Previews extends StatelessWidget {
               horizontal: 8.0,
             ),
             scrollDirection: Axis.horizontal,
-            itemCount: contentList.length,
+            itemCount: contentList!.length,
             itemBuilder: (BuildContext context, int index) {
-              final Content content = contentList[index];
+              final Content content = contentList![index];
 
               return InkWell(
                 onTap: () => Navigator.of(context).push(createRoute(
                     PreviewScreen(
                       startingContent: index,
+                      previewContents: contentList!,
                     ),
                     Offset(0.0, 1.0),
                     Offset.zero)),
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 16.0),
-                      height: 130.0,
-                      width: 130.0,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: content.color, width: 2.5),
-                        image: DecorationImage(
-                            image: NetworkImage(content.poster),
-                            fit: BoxFit.cover),
+                    CachedNetworkImage(
+                      placeholder: (context, url) =>
+                          Center(child: CircularProgressIndicator()),
+                      errorWidget: (context, url, error) => Icon(Icons.error),
+                      imageUrl: content.poster!,
+                      imageBuilder: (context, imageProvider) => Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 16.0),
+                        height: 130.0,
+                        width: 130.0,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: content.color!, width: 2.5),
+                          image: DecorationImage(
+                              image: imageProvider, fit: BoxFit.cover),
+                        ),
                       ),
                     ),
                     Container(
@@ -83,7 +90,8 @@ class Previews extends StatelessWidget {
                       bottom: 0,
                       child: SizedBox(
                         height: 35.0,
-                        child: Image.network(content.titleImageUrl),
+                        child: CachedNetworkImage(
+                            imageUrl: content.titleImageUrl!),
                       ),
                     ),
                   ],

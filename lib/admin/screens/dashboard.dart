@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutterflix/admin/widgets/compactList.dart';
@@ -10,15 +11,15 @@ import 'package:flutterflix/widgets/responsive.dart';
 class Dashboard extends StatefulWidget {
   final Function onCreateContent;
 
-  const Dashboard({Key key, this.onCreateContent}) : super(key: key);
+  const Dashboard({Key? key, required this.onCreateContent}) : super(key: key);
   @override
   _DashboardState createState() => _DashboardState();
 }
 
 class _DashboardState extends State<Dashboard> {
-  Content _homeFeature;
-  Content _tvFeature;
-  Content _movieFeature;
+  late Content? _homeFeature;
+  late Content? _tvFeature;
+  late Content? _movieFeature;
 
   @override
   void initState() {
@@ -59,7 +60,7 @@ class _DashboardState extends State<Dashboard> {
         message: "Featured Home",
         content: _homeFeature,
         onTap: (String newValue) {
-          Content target = Cloud.allContent
+          Content target = Cloud.allContent!
               .firstWhere((Content content) => content.name == newValue);
           setState(() {
             _homeFeature = target;
@@ -71,7 +72,7 @@ class _DashboardState extends State<Dashboard> {
         content: _movieFeature,
         category: ContentCategory.MOVIES,
         onTap: (String newValue) {
-          Content target = Cloud.allContent
+          Content target = Cloud.allContent!
               .firstWhere((Content content) => content.name == newValue);
           setState(() {
             _movieFeature = target;
@@ -87,7 +88,7 @@ class _DashboardState extends State<Dashboard> {
         category: ContentCategory.TV_SHOW,
         content: _tvFeature,
         onTap: (String newValue) {
-          Content target = Cloud.allContent
+          Content target = Cloud.allContent!
               .firstWhere((Content content) => content.name == newValue);
           setState(() {
             _tvFeature = target;
@@ -98,7 +99,7 @@ class _DashboardState extends State<Dashboard> {
         widget.onCreateContent(Content.blank(ContentCategory.TV_SHOW));
       }),
       CompactList(
-        contentNames: Cloud.trending.map((Content val) => val.name).toList(),
+        contentNames: Cloud.trending!.map((Content val) => val.name).toList(),
         backColor: Colors.red[800],
         headColor: Colors.red,
         heading: "Trending",
@@ -110,7 +111,8 @@ class _DashboardState extends State<Dashboard> {
         },
       ),
       CompactList(
-          contentNames: Cloud.originals.map((Content val) => val.name).toList(),
+          contentNames:
+              Cloud.originals!.map((Content val) => val.name).toList(),
           backColor: Colors.brown[800],
           headColor: Colors.brown,
           heading: "Originals",
@@ -122,7 +124,7 @@ class _DashboardState extends State<Dashboard> {
           }),
       CompactList(
           contentNames:
-              Cloud.topSearches.map((Content val) => val.name).toList(),
+              Cloud.topSearches!.map((Content val) => val.name).toList(),
           backColor: Colors.green[800],
           headColor: Colors.green,
           heading: "Top Searches",
@@ -133,7 +135,7 @@ class _DashboardState extends State<Dashboard> {
             addToCompactList(Cloud.topSearches, val);
           }),
       CompactList(
-          contentNames: Cloud.previews.map((Content val) => val.name).toList(),
+          contentNames: Cloud.previews!.map((Content val) => val.name).toList(),
           backColor: Colors.cyan[800],
           headColor: Colors.cyan,
           heading: "Previews",
@@ -146,18 +148,18 @@ class _DashboardState extends State<Dashboard> {
     ];
   }
 
-  void addToCompactList(List list, String newValue) {
-    Content target = Cloud.allContent
+  void addToCompactList(List? list, String newValue) {
+    Content target = Cloud.allContent!
         .firstWhere((Content content) => content.name == newValue);
 
     setState(() {
-      list.add(target);
+      list!.add(target);
     });
   }
 
-  void removeFromCompactList(List list, int index) {
+  void removeFromCompactList(List? list, int index) {
     setState(() {
-      list.removeAt(index);
+      list!.removeAt(index);
     });
   }
 
@@ -183,7 +185,7 @@ class _FlatTile extends StatelessWidget {
   final Color backgroundColor;
   final IconData iconData;
   final String message;
-  final Function onTap;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -212,20 +214,24 @@ class _FlatTile extends StatelessWidget {
 
 class _FeaturedTile extends StatelessWidget {
   final String message;
-  final Content content;
+  final Content? content;
   final Function onTap;
-  final String category;
+  final String? category;
 
   _FeaturedTile(
-      {Key key, this.message, this.content, this.onTap, this.category})
+      {Key? key,
+      required this.message,
+      required this.content,
+      required this.onTap,
+      this.category})
       : super(key: key);
   @override
   Widget build(BuildContext context) {
-    List<Content> contents;
+    late List<Content>? contents;
     if (category == ContentCategory.MOVIES ||
         category == ContentCategory.TV_SHOW) {
       contents =
-          Cloud.allContent.where((el) => el.category == category).toList();
+          Cloud.allContent!.where((el) => el.category == category).toList();
     } else
       contents = Cloud.allContent;
 
@@ -233,110 +239,52 @@ class _FeaturedTile extends StatelessWidget {
       child: InkWell(
         onTap: () {
           showDialog(
-              context: context,
-              child: SecondaryForm(
-                onConfirm: onTap,
-                itemList: contents.map((c) => c.name).toList(),
-                initValue: content.name,
-                title: "Change current feature",
-                type: SecondaryFormType.TextList,
-              ));
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: NetworkImage(content.imageUrlLandscape),
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: Container(
-            color: Colors.black.withOpacity(0.7),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Spacer(),
-                Expanded(
-                  flex: 2,
-                  child: Image.network(content.titleImageUrl),
-                ),
-                Spacer(),
-                Expanded(
-                  flex: 1,
-                  child: Text(
-                    message,
-                    style: TextStyle(color: Colors.white),
+              builder: (context) => SecondaryForm(
+                    onConfirm: onTap,
+                    itemList: contents!.map((c) => c.name).toList(),
+                    initValue: content!.name,
+                    title: "Change current feature",
+                    type: SecondaryFormType.TextList,
                   ),
-                ),
-              ],
+              context: context);
+        },
+        child: CachedNetworkImage(
+          placeholder: (context, url) =>
+              Center(child: CircularProgressIndicator()),
+          errorWidget: (context, url, error) => Icon(Icons.error),
+          imageUrl: content!.imageUrlLandscape!,
+          imageBuilder: (context, imageProvider) => Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: imageProvider,
+                fit: BoxFit.cover,
+              ),
+            ),
+            child: Container(
+              color: Colors.black.withOpacity(0.7),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Spacer(),
+                  Expanded(
+                    flex: 2,
+                    child:
+                        CachedNetworkImage(imageUrl: content!.titleImageUrl!),
+                  ),
+                  Spacer(),
+                  Expanded(
+                    flex: 1,
+                    child: Text(
+                      message,
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
-    /*  Stack(
-      children: [
-        Align(
-          alignment: Alignment.centerRight,
-          child: Container(
-            height: 500.0,
-            width: 1200.0,
-            child: Image(
-              image: NetworkImage(atla.imageUrlLandscape),
-              fit: BoxFit.cover,
-              height: double.infinity,
-              width: double.infinity,
-            ),
-          ),
-        ),
-        Container(
-          height: 501.0,
-          width: MediaQuery.of(context).size.width - 200.0,
-          decoration: const BoxDecoration(
-              gradient: LinearGradient(colors: [
-            Colors.black,
-            Colors.black87,
-            Colors.black38,
-            Colors.transparent
-          ], stops: [
-            0.2,
-            0.4,
-            0.6,
-            1
-          ], begin: Alignment.centerLeft, end: Alignment.centerRight)),
-        ),
-        Positioned(
-            left: 60.0,
-            right: 60.0,
-            top: 100.0,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: 250.0,
-                  child: Image.network(atla.titleImageUrl),
-                ),
-                const SizedBox(height: 15.0),
-                Container(
-                  width: 500.0,
-                  child: Text(
-                    message,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.w500,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black,
-                          offset: Offset(2.0, 4.0),
-                          blurRadius: 6.0,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            )),
-      ],
-    ); */
   }
 }

@@ -1,9 +1,9 @@
 class Trailer {
-  String imageUrl;
-  String name;
-  String videoUrl;
+  String? imageUrl;
+  String? name;
+  String? videoUrl;
 
-  Map<String, dynamic> variableMap;
+  late Map<String, dynamic> variableMap;
 
   Trailer(this.imageUrl, this.name, this.videoUrl) {
     variableMap = {
